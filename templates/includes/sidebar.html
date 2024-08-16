@@ -1,0 +1,16 @@
+
+{% load static %}
+<div class="sidebar sidebar-dark sidebar-fixed" id="sidebar">
+  <div class="sidebar-brand d-none d-md-flex">
+    <a class="sidebar-brand-full" href=""><img src="{% static 'logo/logo.png' %}" alt="Resy Bot Application" width="50px" height="45px"></a>
+    <img class="sidebar-brand-narrow" src="{% static 'logo/logo.png' %}" alt="Resy Bot Application" width="50" height="46">
+  </div>
+  <ul class="sidebar-nav" data-coreui="navigation" data-simplebar="">
+      <li class="nav-title"><a class="nav-link"  href="{% url 'botui_show_reservations' %}">Reservation Type</a></li>
+      <li class="nav-title"><a class="nav-link"  href="{% url 'botui_show_accounts' %}">Account</a></li>
+      <li class="nav-title"><a class="nav-link"  href="{% url 'botui_show_proxies' %}">Proxy</a></li>
+      {% comment %} <li class="nav-title"><a class="nav-link"  href="{% url 'botui_show_reservations' %}">Bot Command</a></li> {% endcomment %}
+  </ul>
+  <button class="sidebar-toggler" type="button" data-coreui-toggle="unfoldable" title="Title"></button>
+</div>
+<!--tes-->
