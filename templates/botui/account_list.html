@@ -22,9 +22,11 @@
                       <td>{{ d.email }}</td>
                       <td>{{ d.password }}</td>
                       <td>{{ d.payment_method_id }}</td>
-                      <td width="15%">
+                      <td width="25%">
                         <button type="button" class="btn btn-sm btn-success"  hx-get="{% url 'botui_edit_account' pk=d.pk %}" hx-target="#dialog">Edit</button>
                         <button style="border:none;"><form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><a class="btn btn-sm btn-danger" hx-delete="{% url 'botui_remove_account' pk=d.pk %}" hx-confirm="Remove Account?">Delete</a></form></button>
+                        <button type="button" class="btn btn-sm btn-warning"  hx-get="{% url 'botui_update_token' pk=d.pk %}" hx-target="#dialog">Update Token</button>
+                        <button type="button" class="btn btn-sm btn-secondary"  hx-get="" hx-target="#dialog">Log</button>
                       </td>  
                   </tr>
                   {% endfor %}

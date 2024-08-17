@@ -20,5 +20,6 @@ urlpatterns = [
     path(route='add_account', view=views.add_account, name=prefix + "add_account"),
     path(route='account/<int:pk>/edit', view=views.edit_account, name=prefix + "edit_account"),
     path(route='account/<int:pk>/remove', view=views.remove_account, name=prefix + 'remove_account'),
+    path(route='account/<int:pk>/update_token', view=views.update_token, name=prefix + 'update_token'),
     
 ]

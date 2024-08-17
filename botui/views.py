@@ -6,6 +6,28 @@ import json
 from .forms import ReservationForm, ProxyForm, AccountForm
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_POST
+from sys import platform
+from subprocess import Popen, check_call, call
+import psutil
+
+if platform == "linux" or platform == "linux2":
+    pass
+elif platform == "win32":
+	from subprocess import CREATE_NEW_CONSOLE
+
+def run_module(comlist):
+	if platform == "linux" or platform == "linux2":
+		comlist[:0] = ["--"]
+		comlist[:0] = ["gnome-terminal"]
+		# print(comlist)
+		Popen(comlist)
+	elif platform == "win32":
+		Popen(comlist, creationflags=CREATE_NEW_CONSOLE)
+	
+	comall = ''
+	for com in comlist:
+		comall += com + " "
+	print(comall)
 
 # Create your views here.
 
@@ -19,7 +41,7 @@ def show_reservations(request):
 def reservation_list(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    reservations = ReservationType.objects.all()
+    reservations = ReservationType.objects.all().order_by("name")
     return render(request, 'botui/reservation_list.html', {
         'data': reservations,
     })
@@ -221,5 +243,29 @@ def remove_account(request, pk):
             'HX-Trigger': json.dumps({
                 "accountListChanged": None,
                 "showMessage": f"{account.email} deleted."
+            })
+        })
+
+def update_token(request, pk):
+    account = get_object_or_404(Account, pk=pk)
+    # print(account.email)
+    PYTHON_EXE = os.getcwd() + os.sep + r"venv\Scripts\python.exe"
+    if platform == "linux" or platform == "linux2":
+        PYLOC = "python"
+        PIPLOC = "pip"
+    elif platform == "win32":
+        PYLOC = PYTHON_EXE
+        PIPLOC = os.getcwd() + os.sep + r"venv\Scripts\pip.exe"
+    # run_module(comlist=[PYLOC, "botmodules/update_token.py", "-em", account.email, "-pw", account.password])
+    fname = open(f"logs/account_{account.id}.log", "w")
+    process = Popen([PYLOC, "botmodules/update_token.py", "-em", account.email, "-pw", account.password], stdout=fname)
+    # print(process.pid)
+    # psutil.pid_exists(process.pid)
+    return HttpResponse(
+        status=204,
+        headers={
+            'HX-Trigger': json.dumps({
+                "accountListChanged": None,
+                "showMessage": f"{account.email} Updated."
             })
         })

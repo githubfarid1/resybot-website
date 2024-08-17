@@ -13,52 +13,26 @@ class Database:
         self.con = sqlite3.connect(db)
         self.cur = self.con.cursor()
 
-        # SQL queries to create tables
-        sql = """
-        CREATE TABLE IF NOT EXISTS commands (
-            id Integer PRIMARY KEY,
-            url text,
-            datewanted text,
-            timewanted text,
-            hoursba Integer,
-            seats Integer,
-            reservation text,
-            rundate text,
-            runtime text,
-            runnow text,
-            account text,
-            nonstop text,
-            duration Integer,
-            proxy text,
-            retry Integer,
-            minidle Integer,
-            maxidle Integer
-        )
-        """
-        # cursor executions
-        self.cur.execute(sql)
-        self.con.commit()
 
     def reservationValues(self):
-        file = open("reservationlist.json", "r")
-        listvalue = json.load(file)
-        tmplist = [value for value in listvalue]
-        tmplist.append("<Not Set>")
-        setlist = set(tmplist)
-        return sorted(list(setlist), key=str.casefold)
+        self.cur.execute("SELECT * FROM botui_reservationtype order name")
+        rows = self.cur.fetchall()
+        return rows
 
     def proxyValues(self):
-        file = open("proxylist.json", "r")
-        listvalue = json.load(file)
-        tmplist = [value['profilename'] for value in listvalue]
-        tmplist.append("<Not Set>")
-        setlist = set(tmplist)
-        return sorted(list(setlist), key=str.casefold)
+        self.cur.execute("SELECT * FROM botui_proxy order name")
+        rows = self.cur.fetchall()
+        return rows
     
-    def profileValues(self):
-        file = open("profilelist.json", "r")
-        self.profilelist = json.load(file)
-        return [value['email'] for value in self.profilelist]
+    def accountValues(self):
+        self.cur.execute("SELECT * FROM botui_account order email")
+        rows = self.cur.fetchall()
+        return rows
+
+    def updateAccount(self, email, token, api_key, payment_method_id):
+        sql_insert_query = """UPDATE botui_account SET token=?, api_key=?, payment_method_id=? WHERE email=?"""
+        self.cur.execute(sql_insert_query, (token, api_key, payment_method_id, email))
+        self.con.commit()
 
     # Add Instructor record to the table
     def insertCommand(self, url, datewanted, timewanted, hoursba, seats, reservation, rundate, runtime, runnow, account, nonstop, duration, proxy, retry, minidle, maxidle):
