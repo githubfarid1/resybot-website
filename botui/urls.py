@@ -21,5 +21,10 @@ urlpatterns = [
     path(route='account/<int:pk>/edit', view=views.edit_account, name=prefix + "edit_account"),
     path(route='account/<int:pk>/remove', view=views.remove_account, name=prefix + 'remove_account'),
     path(route='account/<int:pk>/update_token', view=views.update_token, name=prefix + 'update_token'),
+    path(route='account/<int:pk>/view_account_log', view=views.view_account_log, name=prefix + 'view_account_log'),
     
+    path(route='botcommands', view=views.show_botcommands, name=prefix + "show_botcommands"),
+    path(route='botcommand_list', view=views.botcommand_list, name=prefix + "botcommand_list"),
+    path(route='add_botcommand', view=views.add_botcommand, name=prefix + "add_botcommand"),
+
 ]

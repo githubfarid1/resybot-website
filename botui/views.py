@@ -3,7 +3,7 @@ import os
 from django.shortcuts import render, get_object_or_404, redirect, get_list_or_404
 from .models import ReservationType, Account, BotCommand, Proxy
 import json
-from .forms import ReservationForm, ProxyForm, AccountForm
+from .forms import ReservationForm, ProxyForm, AccountForm, BotCommandForm
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_POST
 from sys import platform
@@ -102,7 +102,6 @@ def remove_reservation(request, pk):
             })
         })
 
-
 def show_proxies(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -173,7 +172,6 @@ def remove_proxy(request, pk):
                 "showMessage": f"{proxy.name} deleted."
             })
         })
-
 
 def show_accounts(request):
     if not request.user.is_authenticated:
@@ -269,3 +267,54 @@ def update_token(request, pk):
                 "showMessage": f"{account.email} Updated."
             })
         })
+
+def view_account_log(request, pk):
+    account = get_object_or_404(Account, pk=pk)
+    with open(f"logs/account_{pk}.log", 'r') as text_file:
+        data = []
+        for line in text_file:
+            row = line.strip()
+            # print(row)
+            data.append(row)
+    strlog = "\n".join(data)
+    return render(request, 'botui/view_account_log.html', {
+        'account': account,
+        'module': 'View Log',
+        "strlog": strlog
+    })
+
+def show_botcommands(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    context = {
+    }
+    return render(request=request, template_name='botui/show_botcommands.html', context=context)
+
+def botcommand_list(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    botcommands = BotCommand.objects.all()
+    return render(request, 'botui/botcommand_list.html', {
+        'data': botcommands,
+    })
+
+def add_botcommand(request):
+    if request.method == "POST":
+        form = BotCommandForm(request.POST)
+        if form.is_valid():
+            botcommand = form.save()
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({
+                        "botcommandListChanged": None,
+                        "showMessage": f"{botcommand.url} added."
+                    })
+                })
+    else:
+        form = BotCommandForm()
+    return render(request, 'botui/botcommand_form.html', {
+        'form': form,
+        'module': 'Add Data'
+    })
+

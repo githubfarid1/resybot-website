@@ -1,0 +1,25 @@
+{% load widget_tweaks %}
+{% with WIDGET_ERROR_CLASS='is-invalid' %}
+<div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title">{{ module }} Account</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <div class="mb-3">
+        <div style="border:1px solid black;height:100px;overflow:scroll;">
+            <p>
+                {{ strlog|linebreaksbr}}           
+            </p>
+        </div>
+    </div>
+    </div>
+   <div class="modal-footer">
+    {% comment %} {% if account %}
+    <button type="button" class="btn btn-danger" hx-delete="{% url 'botui_remove_account' pk=account.id %}" hx-confirm="Remove Account?">Remove</button>
+    <span class="flex-grow-1"></span>
+    {% endif %} {% endcomment %}
+    
+    </div>
+</div>
+{% endwith %}

@@ -20,13 +20,13 @@
 <div class="container-fluid">
     <div class="d-flex flex-row-reverse bd-highlight">
         <div class="p-2 bd-highlight">
-            <button hx-get="{% url 'botui_add_account' %}" hx-target="#dialog" class="btn btn-sm btn-primary">
-                New Account
+            <button hx-get="{% url 'botui_add_botcommand' %}" hx-target="#dialog" class="btn btn-sm btn-primary">
+                New Bot Command
             </button>
         </div>
     
     </div>
-    <div class="row" hx-trigger="load, accountListChanged from:body" hx-get="{% url 'botui_account_list' %}" hx-target="this">
+    <div class="row" hx-trigger="load, botcommandListChanged from:body" hx-get="{% url 'botui_botcommand_list' %}" hx-target="this">
         <span class="visually-hidden">Loading...</span>
     </div>
     <!-- Placeholder for the modal -->
