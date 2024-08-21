@@ -318,3 +318,50 @@ def add_botcommand(request):
         'module': 'Add Data'
     })
 
+def edit_botcommand(request, pk):
+    botcommand = get_object_or_404(BotCommand, pk=pk)
+    # return HttpResponse(year.id)
+    if request.method == "POST":
+        form = BotCommandForm(request.POST, instance=botcommand)
+        if form.is_valid():
+            form.save()
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({
+                        "botcommandListChanged": None,
+                        "showMessage": f"{botcommand.url} updated."
+                    })
+                }
+            )
+    else:
+        form = BotCommandForm(instance=botcommand)
+    return render(request, 'botui/botcommand_form.html', {
+        'form': form,
+        'botcommand': botcommand,
+        'module': 'Edit Data'
+    })
+
+def remove_botcommand(request, pk):
+    botcommand = get_object_or_404(BotCommand, pk=pk)
+    botcommand.delete()
+    return HttpResponse(
+        status=204,
+        headers={
+            'HX-Trigger': json.dumps({
+                "botcommandListChanged": None,
+                "showMessage": f"{botcommand.url} deleted."
+            })
+        })
+
+def run_botcommand(request, pk):
+    botcommand = get_object_or_404(BotCommand, pk=pk)
+    # botcommand.delete()
+    return HttpResponse(
+        status=204,
+        headers={
+            'HX-Trigger': json.dumps({
+                "botcommandListChanged": None,
+                "showMessage": f"{botcommand.url} running."
+            })
+        })

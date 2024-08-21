@@ -101,7 +101,7 @@
 </div>
   <div class="modal-footer">
     {% if botcommand %}
-    <button type="button" class="btn btn-danger" hx-delete="{% url 'botui_remove_account' pk=account.id %}" hx-confirm="Remove Bot Command?">Remove</button>
+    <button type="button" class="btn btn-danger" hx-delete="{% url 'botui_remove_botcommand' pk=botcommand.id %}" hx-confirm="Remove Bot Command?">Remove</button>
     <span class="flex-grow-1"></span>
     {% endif %}
     

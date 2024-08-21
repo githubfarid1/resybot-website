@@ -26,5 +26,8 @@ urlpatterns = [
     path(route='botcommands', view=views.show_botcommands, name=prefix + "show_botcommands"),
     path(route='botcommand_list', view=views.botcommand_list, name=prefix + "botcommand_list"),
     path(route='add_botcommand', view=views.add_botcommand, name=prefix + "add_botcommand"),
-
+    path(route='botcommand/<int:pk>/edit', view=views.edit_botcommand, name=prefix + "edit_botcommand"),
+    path(route='botcommand/<int:pk>/remove', view=views.remove_botcommand, name=prefix + 'remove_botcommand'),
+    path(route='botcommand/<int:pk>/run', view=views.run_botcommand, name=prefix + 'run_botcommand'),
+ 
 ]
