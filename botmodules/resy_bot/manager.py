@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from resy_bot.logging import logging
 from resy_bot.errors import NoSlotsError, ExhaustedRetriesError
 from resy_bot.constants import (
-    N_RETRIES,
     SECONDS_TO_WAIT_BETWEEN_RETRIES,
 )
 from resy_bot.models import (

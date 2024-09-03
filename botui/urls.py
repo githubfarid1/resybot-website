@@ -30,4 +30,9 @@ urlpatterns = [
     path(route='botcommand/<int:pk>/remove', view=views.remove_botcommand, name=prefix + 'remove_botcommand'),
     path(route='botcommand/<int:pk>/run', view=views.run_botcommand, name=prefix + 'run_botcommand'),
  
+    path(route='botruns', view=views.show_botruns, name=prefix + "show_botruns"),
+    path(route='botrun_list', view=views.botrun_list, name=prefix + "botrun_list"),
+    path(route='botrun/<int:pk>/remove', view=views.remove_botrun, name=prefix + 'remove_botrun'),
+    path(route='botrun/<int:pk>/view_botrun_log', view=views.view_botrun_log, name=prefix + 'view_botrun_log'),
+ 
 ]

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import os
 from django.shortcuts import render, get_object_or_404, redirect, get_list_or_404
-from .models import ReservationType, Account, BotCommand, Proxy
+from .models import ReservationType, Account, BotCommand, Proxy, BotRun
 import json
 from .forms import ReservationForm, ProxyForm, AccountForm, BotCommandForm
 from django.http import HttpResponse, Http404, JsonResponse
@@ -9,11 +9,20 @@ from django.views.decorators.http import require_POST
 from sys import platform
 from subprocess import Popen, check_call, call
 import psutil
+import linecache
 
 if platform == "linux" or platform == "linux2":
     pass
 elif platform == "win32":
 	from subprocess import CREATE_NEW_CONSOLE
+
+PYTHON_EXE = os.getcwd() + os.sep + r"venv\Scripts\python.exe"
+if platform == "linux" or platform == "linux2":
+    PYLOC = "python"
+    PIPLOC = "pip"
+elif platform == "win32":
+    PYLOC = PYTHON_EXE
+    PIPLOC = os.getcwd() + os.sep + r"venv\Scripts\pip.exe"
 
 def run_module(comlist):
 	if platform == "linux" or platform == "linux2":
@@ -246,15 +255,6 @@ def remove_account(request, pk):
 
 def update_token(request, pk):
     account = get_object_or_404(Account, pk=pk)
-    # print(account.email)
-    PYTHON_EXE = os.getcwd() + os.sep + r"venv\Scripts\python.exe"
-    if platform == "linux" or platform == "linux2":
-        PYLOC = "python"
-        PIPLOC = "pip"
-    elif platform == "win32":
-        PYLOC = PYTHON_EXE
-        PIPLOC = os.getcwd() + os.sep + r"venv\Scripts\pip.exe"
-    # run_module(comlist=[PYLOC, "botmodules/update_token.py", "-em", account.email, "-pw", account.password])
     fname = open(f"logs/account_{account.id}.log", "w")
     process = Popen([PYLOC, "botmodules/update_token.py", "-em", account.email, "-pw", account.password], stdout=fname)
     # print(process.pid)
@@ -356,7 +356,13 @@ def remove_botcommand(request, pk):
 
 def run_botcommand(request, pk):
     botcommand = get_object_or_404(BotCommand, pk=pk)
-    # botcommand.delete()
+    ret = BotRun.objects.create(url=botcommand.url, datewanted=botcommand.datewanted, timewanted=botcommand.timewanted, hoursba=botcommand.hoursba, seats=botcommand.seats, reservation_name=botcommand.reservation.name, rundate=botcommand.rundate, runtime=botcommand.runtime, runnow=botcommand.runnow, nonstop=botcommand.nonstop, duration=botcommand.duration, retry=botcommand.retry, minidle=botcommand.minidle, maxidle=botcommand.maxidle, account_email=botcommand.account.email, account_password=botcommand.account.password, account_api_key=botcommand.account.api_key, account_token=botcommand.account.token, account_payment_method_id=botcommand.account.payment_method_id, proxy_name=botcommand.proxy.name, proxy_http=botcommand.proxy.http, proxy_https=botcommand.proxy.https)
+    # breakpoint()
+    fname = open(f"logs/botrun_{ret.id}.log", "w")
+    process = Popen([PYLOC, "botmodules/resybotv5b.py", "-id", '{}'.format(ret.id) ], stdout=fname)
+    print(" ".join([PYLOC, "botmodules/resybotv5b.py", "-id", '{}'.format(ret.id) ]))
+    BotRun.objects.filter(pk=ret.id).update(pid=process.pid)
+    
     return HttpResponse(
         status=204,
         headers={
@@ -365,3 +371,77 @@ def run_botcommand(request, pk):
                 "showMessage": f"{botcommand.url} running."
             })
         })
+
+def show_botruns(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    context = {
+    }
+    return render(request=request, template_name='botui/show_botruns.html', context=context)
+
+def botrun_list(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    botruns = BotRun.objects.all()
+    return render(request, 'botui/botrun_list.html', {
+        'botruns': botruns,
+    })
+
+
+def remove_botrun(request, pk):
+    # breakpoint()
+    botrun = get_object_or_404(BotRun, pk=pk)
+    try:
+        os.remove(f"logs/botrun_{botrun.id}.log")
+    except:
+        pass
+    try:
+        proc = psutil.Process(int(botrun.pid))
+        proc.terminate()
+    except:
+        pass
+    botrun.delete()    
+    return HttpResponse(
+        status=204,
+        headers={
+            'HX-Trigger': json.dumps({
+                "botrunListChanged": None,
+                "showMessage": f"{botrun.url} deleted."
+            })
+        })
+
+def tail(f, lines=20):
+    total_lines_wanted = lines
+
+    BLOCK_SIZE = 1024
+    f.seek(0, 2)
+    block_end_byte = f.tell()
+    lines_to_go = total_lines_wanted
+    block_number = -1
+    blocks = []
+    while lines_to_go > 0 and block_end_byte > 0:
+        if (block_end_byte - BLOCK_SIZE > 0):
+            f.seek(block_number*BLOCK_SIZE, 2)
+            blocks.append(f.read(BLOCK_SIZE))
+        else:
+            f.seek(0,0)
+            blocks.append(f.read(block_end_byte))
+        lines_found = blocks[-1].count(b'\n')
+        lines_to_go -= lines_found
+        block_end_byte -= BLOCK_SIZE
+        block_number -= 1
+    all_read_text = b''.join(reversed(blocks))
+    return b'\n'.join(all_read_text.splitlines()[-total_lines_wanted:])
+
+def view_botrun_log(request, pk):
+    botrun = get_object_or_404(BotRun, pk=pk)
+    strlog = ""
+    with open(f"logs/botrun_{pk}.log", 'r') as file:
+        strlog = file.read()
+    # strlog = tail(file, 20)
+    return render(request, 'botui/view_account_log.html', {
+        'botrun': botrun,
+        'module': 'View Log',
+        "strlog": strlog
+    })
+

@@ -13,6 +13,9 @@ class Database:
         self.con = sqlite3.connect(db)
         self.cur = self.con.cursor()
 
+    def getBotRunById(self, id):
+        self.cur.execute("SELECT * FROM botui_botrun WHERE id=?", (id,))
+        return self.cur.fetchone()
 
     def reservationValues(self):
         self.cur.execute("SELECT * FROM botui_reservationtype order name")
