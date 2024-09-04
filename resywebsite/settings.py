@@ -154,3 +154,4 @@ AUTO_LOGOUT = {
     'MESSAGE': 'The session has expired. Please login again to continue.',
     'REDIRECT_TO_LOGIN_IMMEDIATELY': True,
 }
+ALLOWED_HOSTS = ['66.135.15.24', 'pydev.my.id', 'localhost']
