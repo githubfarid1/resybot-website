@@ -1,0 +1,62 @@
+{% load static %}
+<div class="container-fluid">
+    {%if data %}
+    <section class="mx-4 mt-2">
+      <!--Table-->
+          <table class="table table-striped table-hover">
+              <!--Table head-->
+            <thead>
+              <tr>
+                <th scope="col">Restaurant URL</th>
+                <th scope="col">Start Date</th>
+                <th scope="col">End Date</th>
+                <th scope="col">Seats</th>
+                <th scope="col">Time Wanted</th>
+                <th scope="col">BefAft</th>
+                <th scope="col">Reser.</th>
+                <th scope="col">Account</th>
+                <th scope="col">NStop</th>
+                <th scope="col">Proxy</th>
+                <th scope="col">Ret.Sec</th>
+                <th scope="col">Min</th>
+                <th scope="col">Max</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>            
+              <!--Table head-->
+  
+              <!--Table body-->
+              <tbody>
+                  {% for d in data %}
+                  <tr class="table-active">
+                      <td>{{ d.url }}</td>
+                      <td>{{ d.startdate }}</td>
+                      <td>{{ d.enddate }}</td>
+                      <td>{{ d.seats }}</td>
+                      <td>{{ d.timewanted|time:'H:i' }}</td>
+                      <td>{{ d.hoursba }}</td>
+                      <td>{{ d.reservation }}</td>
+                      <td>{{ d.account }}</td>
+                      <td>{{ d.nonstop }}</td>
+                      <td>{{ d.multiproxy }}</td>
+                      <td>{{ d.retrysec }}</td>
+                      <td>{{ d.minidle }}</td>
+                      <td>{{ d.maxidle }}</td>
+                      <td width="13%">
+                        <button type="button" class="btn btn-sm btn-success"  hx-get="{% url 'botui_edit_botcheck' pk=d.pk %}" hx-target="#dialog">Edit</button>
+                        <button style="border:none;"><form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><a class="btn btn-sm btn-danger" hx-delete="{% url 'botui_remove_botcheck' pk=d.pk %}" hx-confirm="Remove Account?">Delete</a></form></button>
+                        <button style="border:none;"><form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><a class="btn btn-sm btn-warning" hx-get="" hx-confirm="Run the process?">Run</a></form></button>
+                      </td>  
+                  </tr>
+                  {% endfor %}
+              </tbody>
+              <!--Table body-->
+          </table>
+          <!--Table-->
+      </section>
+    {% endif %}
+    
+  </div>
+  
+
+

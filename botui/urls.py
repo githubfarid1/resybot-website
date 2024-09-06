@@ -35,4 +35,18 @@ urlpatterns = [
     path(route='botrun/<int:pk>/remove', view=views.remove_botrun, name=prefix + 'remove_botrun'),
     path(route='botrun/<int:pk>/view_botrun_log', view=views.view_botrun_log, name=prefix + 'view_botrun_log'),
  
+    path(route='multiproxies', view=views.show_multiproxies, name=prefix + "show_multiproxies"),
+    path(route='multiproxy_list', view=views.multiproxy_list, name=prefix + "multiproxy_list"),
+    path(route='add_multiproxy', view=views.add_multiproxy, name=prefix + "add_multiproxy"),
+    path(route='multiproxy/<int:pk>/edit', view=views.edit_multiproxy, name=prefix + "edit_multiproxy"),
+    path(route='multiproxy/<int:pk>/remove', view=views.remove_multiproxy, name=prefix + 'remove_multiproxy'),
+
+   path(route='botchecks', view=views.show_botchecks, name=prefix + "show_botchecks"),
+    path(route='botcheck_list', view=views.botcheck_list, name=prefix + "botcheck_list"),
+    path(route='add_botcheck', view=views.add_botcheck, name=prefix + "add_botcheck"),
+    path(route='botcheck/<int:pk>/edit', view=views.edit_botcheck, name=prefix + "edit_botcheck"),
+    path(route='botcheck/<int:pk>/remove', view=views.remove_botcheck, name=prefix + 'remove_botcheck'),
+    # path(route='botcheck/<int:pk>/run', view=views.run_botcheck, name=prefix + 'run_botcheck'),
+ 
+
 ]

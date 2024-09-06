@@ -1,9 +1,9 @@
 from django.shortcuts import render
 import os
 from django.shortcuts import render, get_object_or_404, redirect, get_list_or_404
-from .models import ReservationType, Account, BotCommand, Proxy, BotRun
+from .models import ReservationType, Account, BotCommand, Proxy, BotRun, Multiproxy, BotCheck
 import json
-from .forms import ReservationForm, ProxyForm, AccountForm, BotCommandForm
+from .forms import ReservationForm, ProxyForm, AccountForm, BotCommandForm, MultiproxyForm, BotCheckForm
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_POST
 from sys import platform
@@ -387,7 +387,6 @@ def botrun_list(request):
         'botruns': botruns,
     })
 
-
 def remove_botrun(request, pk):
     # breakpoint()
     botrun = get_object_or_404(BotRun, pk=pk)
@@ -445,3 +444,145 @@ def view_botrun_log(request, pk):
         "strlog": strlog
     })
 
+def show_multiproxies(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    context = {
+    }
+    return render(request=request, template_name='botui/show_multiproxies.html', context=context)
+
+def multiproxy_list(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    multiproxies = Multiproxy.objects.all()
+    return render(request, 'botui/multiproxy_list.html', {
+        'data': multiproxies,
+    })
+
+def add_multiproxy(request):
+    if request.method == "POST":
+        form = MultiproxyForm(request.POST)
+        if form.is_valid():
+            multiproxy = form.save()
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({
+                        "proxyListChanged": None,
+                        "showMessage": f"{multiproxy.name} added."
+                    })
+                })
+    else:
+        form = MultiproxyForm()
+    return render(request, 'botui/multiproxy_form.html', {
+        'form': form,
+        'module': 'Add Data'
+    })
+
+def edit_multiproxy(request, pk):
+    multiproxy = get_object_or_404(Multiproxy, pk=pk)
+    # return HttpResponse(year.id)
+    if request.method == "POST":
+        form = MultiproxyForm(request.POST, instance=multiproxy)
+        if form.is_valid():
+            form.save()
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({
+                        "proxyListChanged": None,
+                        "showMessage": f"{multiproxy.name} updated."
+                    })
+                }
+            )
+    else:
+        form = MultiproxyForm(instance=multiproxy)
+    return render(request, 'botui/multiproxy_form.html', {
+        'form': form,
+        'multiproxy': multiproxy,
+        'module': 'Edit Data'
+    })
+
+def remove_multiproxy(request, pk):
+    multiproxy = get_object_or_404(Multiproxy, pk=pk)
+    multiproxy.delete()
+    return HttpResponse(
+        status=204,
+        headers={
+            'HX-Trigger': json.dumps({
+                "proxyListChanged": None,
+                "showMessage": f"{multiproxy.name} deleted."
+            })
+        })
+
+#-------------
+def show_botchecks(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    context = {
+    }
+    return render(request=request, template_name='botui/show_botchecks.html', context=context)
+
+def botcheck_list(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    botchecks = BotCheck.objects.all()
+    return render(request, 'botui/botcheck_list.html', {
+        'data': botchecks,
+    })
+
+def add_botcheck(request):
+    if request.method == "POST":
+        form = BotCheckForm(request.POST)
+        if form.is_valid():
+            botcheck = form.save()
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({
+                        "botcheckListChanged": None,
+                        "showMessage": f"{botcheck.url} added."
+                    })
+                })
+    else:
+        form = BotCheckForm()
+    return render(request, 'botui/botcheck_form.html', {
+        'form': form,
+        'module': 'Add Data'
+    })
+
+def edit_botcheck(request, pk):
+    botcheck = get_object_or_404(BotCheck, pk=pk)
+    # return HttpResponse(year.id)
+    if request.method == "POST":
+        form = BotCheckForm(request.POST, instance=botcheck)
+        if form.is_valid():
+            form.save()
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({
+                        "botcheckListChanged": None,
+                        "showMessage": f"{botcheck.url} updated."
+                    })
+                }
+            )
+    else:
+        form = BotCheckForm(instance=botcheck)
+    return render(request, 'botui/botcheck_form.html', {
+        'form': form,
+        'botcheck': botcheck,
+        'module': 'Edit Data'
+    })
+
+def remove_botcheck(request, pk):
+    botcheck = get_object_or_404(BotCheck, pk=pk)
+    botcheck.delete()
+    return HttpResponse(
+        status=204,
+        headers={
+            'HX-Trigger': json.dumps({
+                "botcheckListChanged": None,
+                "showMessage": f"{botcheck.url} deleted."
+            })
+        })

@@ -117,4 +117,90 @@ class BotRun(models.Model):
     account_payment_method_id = models.IntegerField(null=True, blank=True)
     pid = models.IntegerField(null=True, blank=True)
     
+class Multiproxy(models.Model):
+    class Meta:
+        ordering = ["name"]
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)
+    value = models.TextField(null=True, blank=True)
+    def __str__(self) -> str:
+        return self.name
+
+
+class BotCheck(models.Model):
+    id = models.AutoField(primary_key=True)
+    url = models.URLField()
+    startdate = models.DateField()
+    enddate = models.DateField()
+    seats = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(1000)]
+    )
+
+    timewanted = models.TimeField()
+    hoursba = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(12)]
+    )
+    nonstop = models.BooleanField()
+    minidle = models.DecimalField(max_digits=5, decimal_places=2,
+        validators=[MinValueValidator(0.5), MaxValueValidator(600)]
+    )
+    maxidle = models.DecimalField(max_digits=5, decimal_places=2,
+        validators=[MinValueValidator(0.5), MaxValueValidator(600)]
+    )
+    retrysec = models.DecimalField(max_digits=3, decimal_places=2,
+        validators=[MinValueValidator(0.01), MaxValueValidator(9.99)]
+    )
+    account = models.ForeignKey(
+        Account,
+        db_column='account_id',
+        on_delete=models.DO_NOTHING, 
+        default=None
+    )
+    multiproxy = models.ForeignKey(
+        Multiproxy,
+        db_column='multiproxy_id',
+        on_delete=models.DO_NOTHING, 
+        default=None
+    )
+    reservation = models.ForeignKey(
+        ReservationType,
+        db_column='reservation_id',
+        on_delete=models.DO_NOTHING, 
+        default=None
+    )
+
+
+class BotCheckRun(models.Model):
+    id = models.AutoField(primary_key=True)
+    url = models.URLField()
+    startdate = models.DateField()
+    enddate = models.DateField()
+    seats = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(1000)]
+    )
+
+    timewanted = models.TimeField()
+    hoursba = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(12)]
+    )
+    nonstop = models.BooleanField()
+    minidle = models.DecimalField(max_digits=5, decimal_places=2,
+        validators=[MinValueValidator(0.5), MaxValueValidator(600)]
+    )
+    maxidle = models.DecimalField(max_digits=5, decimal_places=2,
+        validators=[MinValueValidator(0.5), MaxValueValidator(600)]
+    )
+    retrysec = models.DecimalField(max_digits=3, decimal_places=2,
+        validators=[MinValueValidator(0.01), MaxValueValidator(9.99)]
+    )
+    multiproxy_name = models.CharField(max_length=255, null=True, blank=True)
+    multiproxy_value = models.CharField(max_length=255, null=True, blank=True)
+    reservation_name = models.CharField(max_length=255, null=True, blank=True)
+    account_email = models.CharField(max_length=255, null=True, blank=True)
+    account_password = models.CharField(max_length=255, null=True, blank=True)
+    account_api_key = models.CharField(max_length=255, null=True, blank=True)
+    account_token =  models.CharField(max_length=1000, null=True, blank=True)
+    account_payment_method_id = models.IntegerField(null=True, blank=True)
+    pid = models.IntegerField(null=True, blank=True)
+
 # Create your models here.
