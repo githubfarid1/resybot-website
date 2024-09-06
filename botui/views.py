@@ -50,7 +50,7 @@ def show_reservations(request):
 def reservation_list(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    reservations = ReservationType.objects.all().order_by("name")
+    reservations = ReservationType.objects.exclude(name='<Not Set>').all().order_by("name")
     return render(request, 'botui/reservation_list.html', {
         'data': reservations,
     })
@@ -192,7 +192,7 @@ def show_accounts(request):
 def account_list(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    accounts = Account.objects.all()
+    accounts = Account.objects.exclude(email='<Not Set>').all()
     return render(request, 'botui/account_list.html', {
         'data': accounts,
     })
@@ -454,7 +454,7 @@ def show_multiproxies(request):
 def multiproxy_list(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    multiproxies = Multiproxy.objects.all()
+    multiproxies = Multiproxy.objects.exclude(name='<Not Set>').all()
     return render(request, 'botui/multiproxy_list.html', {
         'data': multiproxies,
     })
