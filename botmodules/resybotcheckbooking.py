@@ -25,7 +25,7 @@ parent = os.path.dirname(current)
 sys.path.append(parent)
 # from settings import CLOSE_MESSAGE, CONTINUE_MESSAGE, TRY_MESSAGE, MIN_IDLE_TIME, MAX_IDLE_TIME
 
-CLOSE_MESSAGE = "TES"
+CLOSE_MESSAGE = ""
 logger = logging.getLogger(__name__)
 logger.setLevel("DEBUG")
 
