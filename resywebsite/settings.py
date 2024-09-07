@@ -158,3 +158,5 @@ AUTO_LOGOUT = {
     'REDIRECT_TO_LOGIN_IMMEDIATELY': True,
 }
 ALLOWED_HOSTS = ['66.135.15.24', 'pydev.my.id', 'localhost', '127.0.0.1']
+PYTHON_PATH = "../venv/bin/python"
+PYTHON_PATH = "../venv/bin/pip"

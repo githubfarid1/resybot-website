@@ -11,6 +11,7 @@ from subprocess import Popen, check_call, call
 import psutil
 import linecache
 import time
+from django.conf import settings
 
 if platform == "linux" or platform == "linux2":
     pass
@@ -19,8 +20,8 @@ elif platform == "win32":
 
 PYTHON_EXE = os.getcwd() + os.sep + r"venv\Scripts\python.exe"
 if platform == "linux" or platform == "linux2":
-    PYLOC = "python"
-    PIPLOC = "pip"
+    PYLOC = settings.PYTHON_PATH
+    PIPLOC = settings.PIP_PATH
 elif platform == "win32":
     PYLOC = PYTHON_EXE
     PIPLOC = os.getcwd() + os.sep + r"venv\Scripts\pip.exe"
