@@ -10,6 +10,7 @@ from sys import platform
 from subprocess import Popen, check_call, call
 import psutil
 import linecache
+import time
 
 if platform == "linux" or platform == "linux2":
     pass
@@ -591,17 +592,17 @@ def run_botcheck(request, pk):
     botcheck = get_object_or_404(BotCheck, pk=pk)
     ret = BotCheckRun.objects.create(url=botcheck.url, startdate=botcheck.startdate, enddate=botcheck.enddate, seats=botcheck.seats, timewanted=botcheck.timewanted, hoursba=botcheck.hoursba, nonstop=botcheck.nonstop, reservation_name=botcheck.reservation.name, retrysec=botcheck.retrysec, minidle=botcheck.minidle, maxidle=botcheck.maxidle, account_email=botcheck.account.email, account_password=botcheck.account.password, account_api_key=botcheck.account.api_key, account_token=botcheck.account.token, account_payment_method_id=botcheck.account.payment_method_id, multiproxy_name=botcheck.multiproxy.name, multiproxy_value=botcheck.multiproxy.value)
     # breakpoint()
-    fname = open(f"logs/botcheckrun_{ret.id}.log", "w")
+    fname = open(f"logs/checkbookrun_web_{ret.id}.log", "w")
     commandlist = [PYLOC, "botmodules/resybotcheckbooking.py", "-id", '{}'.format(ret.id) ]
-    # process = Popen(commandlist, stdout=fname)
+    process = Popen(commandlist, stdout=fname)
     print(" ".join(commandlist))
-    # BotCheckRun.objects.filter(pk=ret.id).update(pid=process.pid)
-    
+    BotCheckRun.objects.filter(pk=ret.id).update(pid=process.pid)
+    print(process.pid)
     return HttpResponse(
         status=204,
         headers={
             'HX-Trigger': json.dumps({
-                "botcommandListChanged": None,
+                "botcheckListChanged": None,
                 "showMessage": f"{botcheck.url} running."
             })
         })
@@ -623,23 +624,57 @@ def botcheckrun_list(request):
     })
 
 def remove_botcheckrun(request, pk):
-    # breakpoint()
     botcheckrun = get_object_or_404(BotCheckRun, pk=pk)
+    pid = botcheckrun.pid
+    
     try:
-        os.remove(f"logs/botcheckrun_{botcheckrun.id}.log")
-    except:
-        pass
-    try:
-        proc = psutil.Process(int(botcheckrun.pid))
+        proc = psutil.Process(int(pid))
         proc.terminate()
     except:
         pass
-    botcheckrun.delete()    
+
+    botcheckrun.delete()
+    time.sleep(0.5)        
+    try:
+        os.remove(f"logs/checkbookrun_web_{pk}.log")
+    except:
+        pass
+
     return HttpResponse(
         status=204,
         headers={
             'HX-Trigger': json.dumps({
                 "botcheckrunListChanged": None,
                 "showMessage": f"{botcheckrun.url} deleted."
+            })
+        })
+
+def view_checkbookrun_log(request, pk):
+    botrun = get_object_or_404(BotCheckRun, pk=pk)
+    strlog = ""
+    with open(f"logs/checkbookrun_web_{pk}.log", 'r') as file:
+        strlog = file.read()
+    # strlog = tail(file, 20)
+    return render(request, 'botui/view_checkbookrun_log.html', {
+        'botrun': botrun,
+        'module': 'View Log',
+        "strlog": strlog
+    })
+
+def stop_botcheckrun(request, pk):
+    # breakpoint()
+    botcheckrun = get_object_or_404(BotCheckRun, pk=pk)
+    pid = botcheckrun.pid
+    try:
+        proc = psutil.Process(int(pid))
+        proc.terminate()
+    except:
+        pass
+    return HttpResponse(
+        status=204,
+        headers={
+            'HX-Trigger': json.dumps({
+                "botcheckrunListChanged": None,
+                "showMessage": f"{botcheckrun.url} stopped."
             })
         })

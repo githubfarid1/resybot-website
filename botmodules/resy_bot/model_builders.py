@@ -9,8 +9,16 @@ from resy_bot.models import (
     BookRequestBody,
     ResyConfig,
     PaymentMethod,
+    VenueBody
 )
 
+#frd
+def build_venue_body(address: str) -> VenueBody:
+    url_slug = address.split("/")[-1]
+    location = address.split("/")[-3]
+    return VenueBody(
+        url_slug=url_slug, location=location
+    )
 
 def build_find_request_body(reservation: ReservationRequest) -> FindRequestBody:
     day = date.strftime(reservation.target_date, "%Y-%m-%d")

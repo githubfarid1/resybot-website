@@ -36,7 +36,7 @@ def intercept_request(request):
     if "https://api.resy.com/2/config" in request.url:
         try:
             api_key=str(request.headers['authorization']).replace('ResyAPI api_key=', "").replace('"','')
-            f = open("logs/api_key2.log", "w")
+            f = open("logs/api_key.log", "w")
             f.write(api_key)
         except:
             return request        
@@ -101,26 +101,35 @@ def main():
     parser.add_argument('-id', '--id', type=str,help="Record ID")
 
     args = parser.parse_args()
-    data = db.getCheckBooking(id=args.id)
-
+    data = db.getCheckBookingRun(id=args.id)
     id = data[0]
     url = data[1]
     startdate = data[2]
     enddate = data[3]
     seats = data[4]
-    account = data[5]
-    timewanted = data[6]
-    hoursba = data[7]
-    breservation = data[8]
-    nonstop = data[9]
-    proxyname = data[10]
-    minidle = data[11]
-    maxidle = data[12]
-    retsecs = data[13]
-    if breservation == '<Not Set>':
-        reservation_type = None
-    else:
-        reservation_type = breservation
+    timewanted = data[5]
+    hoursba = data[6]
+    nonstop = data[7]
+    minidle = data[8]
+    maxidle = data[9]
+    retsecs = data[10]
+    proxy_name = data[11]    
+    proxy_value = data[12]
+    reservation_name = data[13]
+    account_email = data[14]
+    account_password = data[15]
+    account_token = data[17]
+    account_api_key = data[16]
+    account_payment_method_id = data[18]
+
+    # account_id = data[11]
+    # reservation_id = data[12]
+    # multiproxy_id = data[13]
+    # reservation = db.getReservation(reservation_id)
+    # if reservation[1] == '<Not Set>':
+    #     reservation_type = None
+    # else:
+    #     reservation_type = reservation[1]
 
     start_date = datetime.strptime(startdate, '%Y-%m-%d').date()
     end_date = datetime.strptime(enddate, '%Y-%m-%d').date()
@@ -130,24 +139,27 @@ def main():
     api_key = file.read()
     https_proxy = ''
     http_proxy = ''
+    # multiproxy = db.getMultiproxy(id=multiproxy_id)
     proxies = []
-    if  proxyname != '<Not Set>':
-        proxy = db.getMultiproxy(proxyname)
-        proxies = proxy[2].split("\n")
+    if  proxy_name != '<Not Set>':
+        # proxy = db.getMultiproxy(proxyname)
+        # breakpoint()
+        proxies = proxy_value.split("\n")
         http_proxy = proxies[0]
         https_proxy = proxies[0]
     
     resy_config = {"api_key": api_key, "token": '', "payment_method_id": 999999, "email":'', "password":'', "http_proxy": http_proxy, "https_proxy": https_proxy, "retry_count": 1, "seconds_retry": float(retsecs)}
+    # resy_config = {"api_key": api_key, "token": '', "payment_method_id": 999999, "email":'', "password":'', "http_proxy": '', "https_proxy": '', "retry_count": 1, "seconds_retry": float(retsecs)}
+
     venue_id = get_venue_id(resy_config=resy_config, urladdress=url)
+    # breakpoint()
+    # accountdata = db.getAccount(id=account_id)
+
+    if account_email != "<Not Set>":
+        resy_config_booking = {"api_key": account_api_key, "token": account_token, "payment_method_id": account_payment_method_id, "email":account_email, "password":account_password, "http_proxy": http_proxy, "https_proxy": https_proxy, "retry_count": 3, "seconds_retry": float(retsecs)}
     
-    accountdata = db.getAccount(email=account)
-    password = accountdata[2]
-    token = accountdata[3]
-    api_key = accountdata[4]
-    payment_method_id = accountdata[5]
-    resy_config_booking = {"api_key": api_key, "token": token, "payment_method_id": payment_method_id, "email":account, "password":password, "http_proxy": http_proxy, "https_proxy": https_proxy, "retry_count": 3, "seconds_retry": float(retsecs)}
     strdateyesterday = datetime.strftime(datetime.now()-timedelta(days=1), '%Y-%m-%d')
-    flog = open(f"logs/checkbooking_{id}.log", "w")
+    flog = open(f"logs/checkbookrun_terminal_{id}.log", "w")
     stoptime = datetime.now() + timedelta(minutes = 5)
     proxyidx = 1
     try:
@@ -175,6 +187,7 @@ def main():
             flog.write("\n")
             for single_date in daterange(start_date, end_date):
                 searchdate = single_date.strftime("%Y-%m-%d")
+                # breakpoint()
                 tmpstr = f"Date Searching: {searchdate}"
                 print(tmpstr)
                 flog.write(tmpstr + "\n")
@@ -186,9 +199,9 @@ def main():
                 "prefer_early": False,
                 "ideal_date": searchdate,
                 #   "days_in_advance": 14,
-                "ideal_hour": int(convert24(timewanted).split(":")[0]),
-                "ideal_minute": int(convert24(timewanted).split(":")[1]),
-                "preferred_type": reservation_type
+                "ideal_hour": int(timewanted.split(":")[0]),
+                "ideal_minute": int(timewanted.split(":")[1]),
+                "preferred_type": reservation_name,
                 },
                 "expected_drop_hour": 9,
                 "expected_drop_minute": 0, 
@@ -214,7 +227,7 @@ def main():
                         print(myTable)
                         flog.write(str(myTable))
                         # breakpoint()
-                        if account != "<Not Set>":
+                        if account_email != "<Not Set>":
                             try:
                                 tmpstr = "Trying to Book.."
                                 print(tmpstr)
@@ -236,6 +249,16 @@ def main():
                     tmpstr = str(e)
                     print(tmpstr)
                     flog.write(tmpstr + "\n")
+                    # go to next proxy
+                    stoptime = datetime.now() + timedelta(minutes = 5)
+                    resy_config['http_proxy'] = proxies[proxyidx]
+                    resy_config['https_proxy'] = proxies[proxyidx]
+                    tmpstr = f"IP Proxy updated: {resy_config['http_proxy']}"
+                    print(tmpstr)
+                    flog.write(tmpstr + "\n")
+                    proxyidx += 1
+                    if proxyidx == len(proxies):
+                        proxyidx = 0
 
                 except Exception as e:
                     print("Bot Error:", str(e))

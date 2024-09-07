@@ -47,10 +47,19 @@ class Database:
         self.cur.execute("SELECT * FROM botui_botcheck where id=?", (id,))
         return self.cur.fetchone()
 
-    def getMultiproxy(self, name):
-        self.cur.execute("SELECT * FROM botui_multiproxy where name=?", (name,))
+
+    def getMultiproxy(self, id):
+        self.cur.execute("SELECT * FROM botui_multiproxy where id=?", (id,))
         return self.cur.fetchone()
 
-    def getAccount(self, email):
-        self.cur.execute("SELECT * FROM botui_account where email=?", (email,))
+    def getAccount(self, id):
+        self.cur.execute("SELECT * FROM botui_account where id=?", (id,))
+        return self.cur.fetchone()
+
+    def getReservation(self, id):
+        self.cur.execute("SELECT * FROM botui_reservationtype where id=?", (id,))
+        return self.cur.fetchone()
+
+    def getCheckBookingRun(self, id):
+        self.cur.execute("SELECT * FROM botui_botcheckrun where id=?", (id,))
         return self.cur.fetchone()

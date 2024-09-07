@@ -15,6 +15,7 @@ from resy_bot.model_builders import (
     build_find_request_body,
     build_get_slot_details_body,
     build_book_request_body,
+    build_venue_body,
 )
 from resy_bot.api_access import ResyApiAccess
 from resy_bot.selectors import AbstractSelector, SimpleSelector
@@ -49,13 +50,10 @@ class ResyManager:
         self.selector = slot_selector
         self.retry_config = retry_config
 
+    #frd
     def get_venue_id(self, address: str):
-        """
-        TODO: get venue id from string address
-            will use geolocator to get lat/long
-        :return:
-        """
-        pass
+        body = build_venue_body(address)
+        return self.api_access.find_venue_id(body)
 
     def make_reservation(self, reservation_request: ReservationRequest) -> str:
         body = build_find_request_body(reservation_request)

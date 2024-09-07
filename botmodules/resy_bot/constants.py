@@ -16,4 +16,4 @@ class ResyEndpoints(Enum):
     PASSWORD_AUTH = "/3/auth/password"
     # frd
     USER = "/2/user"
-    VENUE = ""
+    VENUE = "/3/venue"

@@ -51,6 +51,7 @@ urlpatterns = [
     path(route='botcheckruns', view=views.show_botcheckruns, name=prefix + "show_botcheckruns"),
     path(route='botcheckrun_list', view=views.botcheckrun_list, name=prefix + "botcheckrun_list"),
     path(route='botcheckrun/<int:pk>/remove', view=views.remove_botcheckrun, name=prefix + 'remove_botcheckrun'),
-    # path(route='botcheckrun/<int:pk>/view_botcheckrun_log', view=views.view_botcheckrun_log, name=prefix + 'view_botcheckrun_log'),
-
+    path(route='botcheckrun/<int:pk>/view_checkbookrun_log', view=views.view_checkbookrun_log, name=prefix + 'view_checkbookrun_log'),
+   path(route='botcheckrun/<int:pk>/stop', view=views.stop_botcheckrun, name=prefix + 'stop_botcheckrun'),
+ 
 ]
