@@ -608,7 +608,6 @@ def run_botcheck(request, pk):
             })
         })
 
-
 def show_botcheckruns(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -619,7 +618,18 @@ def show_botcheckruns(request):
 def botcheckrun_list(request):
     if not request.user.is_authenticated:
         return redirect('login')
+    
     botcheckruns = BotCheckRun.objects.all()
+    for idx, bot in enumerate(botcheckruns):
+        stat = "Stopped"
+        bgcolor = "bg-success"
+        if psutil.pid_exists(bot.pid):
+            stat = "Running"
+            bgcolor="bg-danger"
+        botcheckruns[idx].pidstatus = stat
+        botcheckruns[idx].bgcolor = bgcolor
+
+
     return render(request, 'botui/botcheckrun_list.html', {
         'botcheckruns': botcheckruns,
     })

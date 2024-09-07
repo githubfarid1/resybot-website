@@ -3,8 +3,8 @@
     {% for d in botcheckruns %}
     <div class="col-12 col-lg-3 mt-3">
       <div class="card border-primary mb-3">
-         {% comment %} <form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-delete="{% url 'botui_remove_botcheckrun' pk=d.pk %}" hx-confirm="Remove Bot Running?"><button>Delete</button></form> {% endcomment %}
-
+         {% comment %} <form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-delete="{% url 'botui_remove_botcheckrun' pk=d.id %}" hx-confirm="Remove Bot Running?"><button>Delete</button></form> {% endcomment %}
+         <div class="text-white text-center {{ d.bgcolor }}"><strong>{{ d.pidstatus }}</strong></div>
         <div class="row no-gutters px-3 py-2">
             <div class="col-sm-12 mt-3">
               <div style="border:1px solid black;height:220px;overflow:scroll;">
@@ -32,14 +32,14 @@
           </div>
             <div class="row">
               <div class="col-lg-4">
-                <form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><button class="w-100 btn btn-sm btn-warning" hx-delete="{% url 'botui_remove_botcheckrun' pk=d.pk %}" hx-confirm="Remove Bot Running?">Delete</button></form>
+                <form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><button class="w-100 btn btn-sm btn-warning" hx-delete="{% url 'botui_remove_botcheckrun' pk=d.id %}" hx-confirm="Remove Bot Running?">Delete</button></form>
 
               </div>
               <div class="col-lg-4">
-                <form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><button class="w-100 btn btn-sm btn-primary" hx-get="{% url 'botui_stop_botcheckrun' pk=d.pk %}" hx-confirm="Stop Bot Running?">Stop</button></form>
+                <form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><button class="w-100 btn btn-sm btn-primary" hx-get="{% url 'botui_stop_botcheckrun' pk=d.id %}" hx-confirm="Stop Bot Running?">Stop</button></form>
               </div>
               <div class="col-lg-4">
-                <button type="button" class="btn btn-sm btn-secondary"  hx-get="{% url 'botui_view_checkbookrun_log' pk=d.pk %}" hx-target="#dialog">Show Log</button>
+                <button type="button" class="btn btn-sm btn-secondary"  hx-get="{% url 'botui_view_checkbookrun_log' pk=d.id %}" hx-target="#dialog">Show Log</button>
 
               </div>
             </div>

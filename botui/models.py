@@ -202,5 +202,4 @@ class BotCheckRun(models.Model):
     account_token =  models.CharField(max_length=1000, null=True, blank=True)
     account_payment_method_id = models.IntegerField(null=True, blank=True)
     pid = models.IntegerField(null=True, blank=True)
-
 # Create your models here.
