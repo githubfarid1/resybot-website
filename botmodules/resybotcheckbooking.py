@@ -234,7 +234,7 @@ def main():
                                 flog.write(tmpstr + "\n")
                                 # breakpoint()
                                 book_now(resy_config=resy_config_booking, reservation_config=reservation_config)
-                                input("Reservation Success..." + CLOSE_MESSAGE)
+                                print("Reservation Success..." + CLOSE_MESSAGE)
                                 sys.exit()
                             except (ExhaustedRetriesError, NoSlotsError) as e:
                                 tmpstr = str(e)
@@ -249,16 +249,17 @@ def main():
                     tmpstr = str(e)
                     print(tmpstr)
                     flog.write(tmpstr + "\n")
-                    # go to next proxy
-                    stoptime = datetime.now() + timedelta(minutes = 5)
-                    resy_config['http_proxy'] = proxies[proxyidx]
-                    resy_config['https_proxy'] = proxies[proxyidx]
-                    tmpstr = f"IP Proxy updated: {resy_config['http_proxy']}"
-                    print(tmpstr)
-                    flog.write(tmpstr + "\n")
-                    proxyidx += 1
-                    if proxyidx == len(proxies):
-                        proxyidx = 0
+                    if len(proxies) > 0:
+                        # go to next proxy
+                        stoptime = datetime.now() + timedelta(minutes = 5)
+                        resy_config['http_proxy'] = proxies[proxyidx]
+                        resy_config['https_proxy'] = proxies[proxyidx]
+                        tmpstr = f"IP Proxy updated: {resy_config['http_proxy']}"
+                        print(tmpstr)
+                        flog.write(tmpstr + "\n")
+                        proxyidx += 1
+                        if proxyidx == len(proxies):
+                            proxyidx = 0
 
                 except Exception as e:
                     print("Bot Error:", str(e))
@@ -266,7 +267,7 @@ def main():
                 flog.write("\n" + str(datetime.now()) +"\n")
                 print("")
                 flog.write("\n")
-            if nonstop == "No":
+            if nonstop == False:
                 break
             else:
                 tmpstr = "____________________________Repeat________________________________"
@@ -278,7 +279,7 @@ def main():
         tmpstr = "Process Finished..."
         flog.write(tmpstr+"\n")
         flog.close()
-        input(tmpstr)
+        print(tmpstr)
     except:
         flog.close()
     

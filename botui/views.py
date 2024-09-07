@@ -593,12 +593,12 @@ def run_botcheck(request, pk):
     botcheck = get_object_or_404(BotCheck, pk=pk)
     ret = BotCheckRun.objects.create(url=botcheck.url, startdate=botcheck.startdate, enddate=botcheck.enddate, seats=botcheck.seats, timewanted=botcheck.timewanted, hoursba=botcheck.hoursba, nonstop=botcheck.nonstop, reservation_name=botcheck.reservation.name, retrysec=botcheck.retrysec, minidle=botcheck.minidle, maxidle=botcheck.maxidle, account_email=botcheck.account.email, account_password=botcheck.account.password, account_api_key=botcheck.account.api_key, account_token=botcheck.account.token, account_payment_method_id=botcheck.account.payment_method_id, multiproxy_name=botcheck.multiproxy.name, multiproxy_value=botcheck.multiproxy.value)
     # breakpoint()
-    # fname = open(f"logs/checkbookrun_web_{ret.id}.log", "w")
-    # commandlist = [PYLOC, "botmodules/resybotcheckbooking.py", "-id", '{}'.format(ret.id) ]
-    # process = Popen(commandlist, stdout=fname)
-    # print(" ".join(commandlist))
-    # BotCheckRun.objects.filter(pk=ret.id).update(pid=process.pid)
-    # print(process.pid)
+    fname = open(f"logs/checkbookrun_web_{ret.id}.log", "w")
+    commandlist = [PYLOC, "botmodules/resybotcheckbooking.py", "-id", '{}'.format(ret.id) ]
+    process = Popen(commandlist, stdout=fname)
+    print(" ".join(commandlist))
+    BotCheckRun.objects.filter(pk=ret.id).update(pid=process.pid)
+    print(process.pid)
     return HttpResponse(
         status=204,
         headers={
