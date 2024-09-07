@@ -127,7 +127,7 @@ def main():
             
     except Exception as e:
         if error:
-            logger.error("An error occurred.." + e)
+            logger.error("An error occurred.." + str(e))
         sys.exit()
 if __name__ == '__main__':
     main()
