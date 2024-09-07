@@ -232,7 +232,7 @@ def main():
                                 tmpstr = "Trying to Book.."
                                 print(tmpstr)
                                 flog.write(tmpstr + "\n")
-                                # breakpoint()
+                                breakpoint()
                                 book_now(resy_config=resy_config_booking, reservation_config=reservation_config)
                                 print("Reservation Success..." + CLOSE_MESSAGE)
                                 sys.exit()
