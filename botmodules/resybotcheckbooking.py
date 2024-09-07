@@ -126,10 +126,8 @@ def main():
     # reservation_id = data[12]
     # multiproxy_id = data[13]
     # reservation = db.getReservation(reservation_id)
-    # if reservation[1] == '<Not Set>':
-    #     reservation_type = None
-    # else:
-    #     reservation_type = reservation[1]
+    if reservation_name == '<Not Set>':
+        reservation_name = None
 
     start_date = datetime.strptime(startdate, '%Y-%m-%d').date()
     end_date = datetime.strptime(enddate, '%Y-%m-%d').date()
