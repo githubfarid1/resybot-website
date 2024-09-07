@@ -23,7 +23,15 @@ db = Database("db.sqlite3")
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
-
+PROXY_REQUEST = {
+    "http":"http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181",
+    "https": "http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181"
+}
+PROXY_PL={
+  "server": "http://residential-proxy.scrapeops.io:8181",
+  "username": "scrapeops",
+  "password": "f2d43fe5-5bee-41ab-83f9-da70ae59c60a"
+}
 CLOSE_MESSAGE = "tes"
 def login_to_resy(page, email, password):
     """Login to Resy with enhanced stability and error handling."""
@@ -64,7 +72,7 @@ def intercept_request(request, profilename):
                 "User-Agent": generate_user_agent(),
                 'Cache-Control': "no-cache",
             }
-            response = requests.get('https://api.resy.com/2/user', headers=headers)
+            response = requests.get('https://api.resy.com/2/user', headers=headers, proxies=PROXY_REQUEST)
             try:
                 payment_method_id = response.json()['payment_method_id']
             except:
@@ -104,7 +112,7 @@ def main():
             wargs.append('--disable-web-security')
             wargs.append('--start-maximized')
             
-            browser =  pr.chromium.launch(headless=True, args=wargs)
+            browser =  pr.chromium.launch(headless=True, args=wargs, proxy=PROXY_PL)
             page = browser.new_page()
             stealth_sync(page)
             
