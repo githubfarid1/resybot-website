@@ -27,7 +27,7 @@ sys.path.append(parent)
 
 CLOSE_MESSAGE = "TES"
 logger = logging.getLogger(__name__)
-logger.setLevel("INFO")
+logger.setLevel("DEBUG")
 
 def random_delay(min_seconds, max_seconds):
     return random.uniform(min_seconds, max_seconds)
