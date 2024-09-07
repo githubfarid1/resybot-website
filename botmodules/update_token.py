@@ -28,7 +28,7 @@ CLOSE_MESSAGE = "tes"
 def login_to_resy(page, email, password):
     """Login to Resy with enhanced stability and error handling."""
     try:
-        page.wait_for_selector('.AnnouncementModal__icon-close', timeout=5000)
+        page.wait_for_selector('.AnnouncementModal__icon-close', timeout=30000)
         page.click('.AnnouncementModal__icon-close')
     except Exception:
         logging.info("No announcement modal to close.")
