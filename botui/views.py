@@ -657,9 +657,12 @@ def view_checkbookrun_log(request, pk):
         with open(f"logs/checkbookrun_web_{pk}.log", 'r') as file:
             strlog = file.read()
     elif platform == "linux" or platform == "linux2":
-        Popen(["tail", f"logs/checkbookrun_web_{pk}.log", "-100"], stdout=f"logs/checkbookrun_tail_{pk}.log")
-        with open(f"logs/checkbookrun_tail_{pk}.log", 'r') as file:
+        with open(f"logs/checkbookrun_web_{pk}.log", 'r') as file:
             strlog = file.read()
+
+        # Popen(["tail", f"logs/checkbookrun_web_{pk}.log", "-100"], stdout=f"logs/checkbookrun_tail_{pk}.log")
+        # with open(f"logs/checkbookrun_tail_{pk}.log", 'r') as file:
+        #     strlog = file.read()
 
     return render(request, 'botui/view_checkbookrun_log.html', {
         'botrun': botrun,
