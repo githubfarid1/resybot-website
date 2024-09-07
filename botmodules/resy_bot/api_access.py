@@ -27,7 +27,7 @@ from resy_bot.errors import Get500Error
 # from settings import PROXIES
 
 logger = logging.getLogger(__name__)
-logger.setLevel("INFO")
+logger.setLevel("ERROR")
 
 
 def build_session(config: ResyConfig) -> Session:
