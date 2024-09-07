@@ -115,9 +115,10 @@ class ResyApiAccess:
         if not resp.ok:
             #frd
             if resp.status_code == 500:
-                ipused = self.get_ip_used().strip()
-                logger.info(ipused)
-                raise Get500Error(f"Error, IP Used: {ipused}")
+                # ipused = self.get_ip_used().strip()
+                # logger.info(ipused)
+                # raise Get500Error(f"Error, IP Used: {ipused}")
+                raise Get500Error(f"Error, Public IP Blocked {self.session.proxies.get('http')}")
             #----
 
             raise HTTPError(
