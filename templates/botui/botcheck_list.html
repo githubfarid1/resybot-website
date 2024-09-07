@@ -45,7 +45,7 @@
                       <td width="13%">
                         <button type="button" class="btn btn-sm btn-success"  hx-get="{% url 'botui_edit_botcheck' pk=d.pk %}" hx-target="#dialog">Edit</button>
                         <button style="border:none;"><form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><a class="btn btn-sm btn-danger" hx-delete="{% url 'botui_remove_botcheck' pk=d.pk %}" hx-confirm="Remove Account?">Delete</a></form></button>
-                        <button style="border:none;"><form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><a class="btn btn-sm btn-warning" hx-get="" hx-confirm="Run the process?">Run</a></form></button>
+                        <button style="border:none;"><form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><a class="btn btn-sm btn-warning" hx-get="{% url 'botui_run_botcheck' pk=d.pk %}" hx-confirm="Run the process?">Run</a></form></button>
                       </td>  
                   </tr>
                   {% endfor %}

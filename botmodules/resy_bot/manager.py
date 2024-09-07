@@ -18,6 +18,7 @@ from resy_bot.model_builders import (
 )
 from resy_bot.api_access import ResyApiAccess
 from resy_bot.selectors import AbstractSelector, SimpleSelector
+import time
 
 logger = logging.getLogger(__name__)
 logger.setLevel("INFO")
@@ -29,8 +30,10 @@ class ResyManager:
         api_access = ResyApiAccess.build(config)
         selector = SimpleSelector()
         retry_config = ReservationRetriesConfig(
-            seconds_between_retries=SECONDS_TO_WAIT_BETWEEN_RETRIES,
-            n_retries=config.retry_count,
+            # seconds_between_retries=SECONDS_TO_WAIT_BETWEEN_RETRIES,
+            seconds_between_retries=config.seconds_retry, #frd
+            # n_retries=N_RETRIES,
+            n_retries=config.retry_count,#frd
         )
         return cls(config, api_access, selector, retry_config)
 
@@ -80,6 +83,28 @@ class ResyManager:
         resy_token = self.api_access.book_slot(booking_request)
 
         return resy_token
+
+    #frd
+    def check_reservation_with_retries(self, reservation_request: ReservationRequest):
+        for _ in range(self.retry_config.n_retries):
+            try:
+                time.sleep(self.retry_config.seconds_between_retries)
+                body = build_find_request_body(reservation_request)
+                slots = self.api_access.find_booking_slots(body)
+                if len(slots) == 0:
+                    raise NoSlotsError("No Slots Found")
+                else:
+                    logger.info(len(slots))
+                    # logger.info(slots)
+                    return slots
+            except NoSlotsError:
+                logger.info(
+                    f"no slots, retrying; currently {datetime.now().isoformat()}"
+                )
+                        
+        raise ExhaustedRetriesError(
+            f"Retried {self.retry_config.n_retries} times, " "without finding a slot"
+        )
 
     def make_reservation_with_retries(
         self, reservation_request: ReservationRequest

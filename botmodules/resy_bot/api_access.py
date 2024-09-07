@@ -14,8 +14,11 @@ from resy_bot.models import (
     DetailsResponseBody,
     BookRequestBody,
     BookResponseBody,
+    VenueBody,
 )
 from user_agent import generate_user_agent
+from resy_bot.errors import Get500Error
+
 # import os
 # import sys
 # current = os.path.dirname(os.path.realpath(__file__))
@@ -60,6 +63,21 @@ class ResyApiAccess:
     def __init__(self, session: Session):
         self.session = session
 
+    #frd
+    def find_venue_id(self, params: VenueBody):
+        find_url = RESY_BASE_URL + ResyEndpoints.VENUE.value
+        logger.info(
+            f"{datetime.now().isoformat()} Sending request to find venue_id"
+        )
+        
+        resp = self.session.get(find_url, params=params.dict())
+        logger.info(f"{datetime.now().isoformat()}: Received response for ")
+        if not resp.ok:
+            raise HTTPError(
+                f"Failed to find booking venue_id: {resp.status_code}, {resp.text}"
+            )
+        return resp.json()['id']['resy']
+
     def find_venue(self):
         pass
 
@@ -73,6 +91,13 @@ class ResyApiAccess:
         )
 
         if not resp.ok:
+            #frd
+            if resp.status_code == 500:
+                ipused = self.get_ip_used().strip()
+                logger.info(ipused)
+                raise Get500Error(f"Error, IP Used: {ipused}")
+            #----
+
             raise HTTPError(f"Failed to get auth: {resp.status_code}, {resp.text}")
 
         return AuthResponseBody(**resp.json())
@@ -88,6 +113,13 @@ class ResyApiAccess:
         logger.info(f"{datetime.now().isoformat()} Received response for ")
 
         if not resp.ok:
+            #frd
+            if resp.status_code == 500:
+                ipused = self.get_ip_used().strip()
+                logger.info(ipused)
+                raise Get500Error(f"Error, IP Used: {ipused}")
+            #----
+
             raise HTTPError(
                 f"Failed to find booking slots: {resp.status_code}, {resp.text}"
             )
@@ -147,3 +179,9 @@ class ResyApiAccess:
         parsed_resp = BookResponseBody(**resp.json())
 
         return parsed_resp.resy_token
+
+    #frd
+    def get_ip_used(self):
+        response = self.session.get("http://whatismyip.akamai.com/")
+        if response.status_code == 200:
+            return response.text.strip()

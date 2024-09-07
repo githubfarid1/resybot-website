@@ -10,9 +10,10 @@ class ResyConfig(BaseModel):
     payment_method_id: int
     email: str
     password: str
-    http_proxy: str
-    https_proxy: str
-    retry_count: int
+    http_proxy: str #frd
+    https_proxy: str #frd
+    retry_count: int #frd
+    seconds_retry: float #frd
 
     def get_authorization(self) -> str:
         return f'ResyAPI api_key="{self.api_key}"'
@@ -149,3 +150,7 @@ class BookRequestBody(BaseModel):
 
 class BookResponseBody(BaseModel):
     resy_token: str
+
+class VenueBody(BaseModel):
+    url_slug: str
+    location: str

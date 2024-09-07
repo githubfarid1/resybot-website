@@ -47,11 +47,6 @@
                     {% render_field form.reservation class="form-control" placeholder="" %}
                     <div class="invalid-feedback">{{ form.reservation.errors|first }}</div>
                 </div>
-                <div class="mb-2">
-                    <label for="{{ form.account.id_for_label }}" class="form-label">Account</label>
-                    {% render_field form.account class="form-control" placeholder="" %}
-                    <div class="invalid-feedback">{{ form.account.errors|first }}</div>
-                </div>
             </div>
             <div class="col">
                   <div class="mb-2">
@@ -73,6 +68,11 @@
                     <label for="{{ form.maxidle.id_for_label }}" class="form-label">Max. Idle Time</label>
                     {% render_field form.maxidle class="form-control" placeholder="" %}
                     <div class="invalid-feedback">{{ form.maxidle.errors|first }}</div>
+                  </div>
+                  <div class="mb-2">
+                    <label for="{{ form.account.id_for_label }}" class="form-label">Account</label>
+                    {% render_field form.account class="form-control" placeholder="" %}
+                    <div class="invalid-feedback">{{ form.account.errors|first }}</div>
                   </div>
                   <div class="mb-2">
                     <label for="{{ form.multiproxy.id_for_label }}" class="form-label">Proxy</label>

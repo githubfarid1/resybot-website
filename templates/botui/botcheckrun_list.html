@@ -1,0 +1,46 @@
+{% load static %}
+  {% if botcheckruns %}
+    {% for d in botcheckruns %}
+    <div class="col-12 col-lg-3 mt-3">
+      <div class="card border-primary mb-3">
+         {% comment %} <form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-delete="{% url 'botui_remove_botcheckrun' pk=d.pk %}" hx-confirm="Remove Bot Running?"><button>Delete</button></form> {% endcomment %}
+         <div class="btn btn-sm btn-warning"><form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><a class="btn btn-sm btn-warning" hx-delete="{% url 'botui_remove_botcheckrun' pk=d.pk %}" hx-confirm="Remove Bot Running?">Delete</a></form></div>
+
+        <div class="row no-gutters px-3 py-2">
+            <div class="col-sm-12 mt-3">
+              <div style="border:1px solid black;height:220px;overflow:scroll;">
+                <p class="px-2">
+                Base URL: <strong>{{ d.url }}</strong><br/> 
+                Start Date: <strong>{{ d.startdate|date:"Y-m-d" }}</strong><br/>
+                End Date: <strong>{{ d.enddate|date:"Y-m-d" }}</strong><br/>
+                Time: <strong>{{ d.timewanted|time:"H:i" }}</strong><br/>
+                Hours Before After: <strong>{{ d.hoursba }}</strong><br/>
+                Seats: <strong>{{ d.seats }}</strong><br/>
+                Reservation Type: <strong>{{ d.reservation_name }}</strong><br/>
+                Non Stop Running: <strong>{{ d.nonstop }}</strong><br/>
+                Seconds Between Retries: <strong>{{ d.retrysec }}</strong><br/>
+                Min Idle Time: <strong>{{ d.minidle }}</strong><br/>
+                Max Idle Time: <strong>{{ d.maxidle }}</strong><br/>
+                Account: <strong>{{ d.account_email }}</strong><br/>
+                Proxy: <strong>{{ d.multiproxy_name }}</strong><br/>
+
+                {% comment %} Index: <strong>{{ d.creator }}</strong><br/>
+                Uraian: <strong>{{ d.description|linebreaksbr}}</strong><br/> {% endcomment %}
+                </p>
+              </div>
+            </div>
+          </div>
+            <div class="row">
+              <div class="col-lg-6">
+                <a href=""><button class="w-100 btn btn-sm btn-primary">Stop</button></a>
+              </div>
+              <div class="col-lg-6">
+                <button type="button" class="btn btn-sm btn-secondary"  hx-get="" hx-target="#dialog">Show Log</button>
+
+              </div>
+            </div>
+        </div>
+      </div>
+    
+    {% endfor %}
+{% endif %}

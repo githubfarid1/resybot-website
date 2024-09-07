@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import os
 from django.shortcuts import render, get_object_or_404, redirect, get_list_or_404
-from .models import ReservationType, Account, BotCommand, Proxy, BotRun, Multiproxy, BotCheck
+from .models import ReservationType, Account, BotCommand, Proxy, BotRun, Multiproxy, BotCheck, BotCheckRun
 import json
 from .forms import ReservationForm, ProxyForm, AccountForm, BotCommandForm, MultiproxyForm, BotCheckForm
 from django.http import HttpResponse, Http404, JsonResponse
@@ -444,6 +444,7 @@ def view_botrun_log(request, pk):
         "strlog": strlog
     })
 
+
 def show_multiproxies(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -515,7 +516,6 @@ def remove_multiproxy(request, pk):
             })
         })
 
-#-------------
 def show_botchecks(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -584,5 +584,62 @@ def remove_botcheck(request, pk):
             'HX-Trigger': json.dumps({
                 "botcheckListChanged": None,
                 "showMessage": f"{botcheck.url} deleted."
+            })
+        })
+
+def run_botcheck(request, pk):
+    botcheck = get_object_or_404(BotCheck, pk=pk)
+    ret = BotCheckRun.objects.create(url=botcheck.url, startdate=botcheck.startdate, enddate=botcheck.enddate, seats=botcheck.seats, timewanted=botcheck.timewanted, hoursba=botcheck.hoursba, nonstop=botcheck.nonstop, reservation_name=botcheck.reservation.name, retrysec=botcheck.retrysec, minidle=botcheck.minidle, maxidle=botcheck.maxidle, account_email=botcheck.account.email, account_password=botcheck.account.password, account_api_key=botcheck.account.api_key, account_token=botcheck.account.token, account_payment_method_id=botcheck.account.payment_method_id, multiproxy_name=botcheck.multiproxy.name, multiproxy_value=botcheck.multiproxy.value)
+    # breakpoint()
+    fname = open(f"logs/botcheckrun_{ret.id}.log", "w")
+    commandlist = [PYLOC, "botmodules/resybotcheckbooking.py", "-id", '{}'.format(ret.id) ]
+    # process = Popen(commandlist, stdout=fname)
+    print(" ".join(commandlist))
+    # BotCheckRun.objects.filter(pk=ret.id).update(pid=process.pid)
+    
+    return HttpResponse(
+        status=204,
+        headers={
+            'HX-Trigger': json.dumps({
+                "botcommandListChanged": None,
+                "showMessage": f"{botcheck.url} running."
+            })
+        })
+
+
+def show_botcheckruns(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    context = {
+    }
+    return render(request=request, template_name='botui/show_botcheckruns.html', context=context)
+
+def botcheckrun_list(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    botcheckruns = BotCheckRun.objects.all()
+    return render(request, 'botui/botcheckrun_list.html', {
+        'botcheckruns': botcheckruns,
+    })
+
+def remove_botcheckrun(request, pk):
+    # breakpoint()
+    botcheckrun = get_object_or_404(BotCheckRun, pk=pk)
+    try:
+        os.remove(f"logs/botcheckrun_{botcheckrun.id}.log")
+    except:
+        pass
+    try:
+        proc = psutil.Process(int(botcheckrun.pid))
+        proc.terminate()
+    except:
+        pass
+    botcheckrun.delete()    
+    return HttpResponse(
+        status=204,
+        headers={
+            'HX-Trigger': json.dumps({
+                "botcheckrunListChanged": None,
+                "showMessage": f"{botcheckrun.url} deleted."
             })
         })
