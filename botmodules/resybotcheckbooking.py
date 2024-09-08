@@ -162,7 +162,7 @@ def main():
     proxyidx = 1
     try:
         while True:
-            if len(proxies) > 0:
+            if len(proxies) > 1:
                 if datetime.now() >= stoptime:
                     stoptime = datetime.now() + timedelta(minutes = 5)
                     resy_config['http_proxy'] = proxies[proxyidx]
@@ -246,7 +246,7 @@ def main():
                     tmpstr = str(e)
                     print(tmpstr)
                     flog.write(tmpstr + "\n")
-                    if len(proxies) > 0:
+                    if len(proxies) > 1:
                         # go to next proxy
                         stoptime = datetime.now() + timedelta(minutes = 5)
                         resy_config['http_proxy'] = proxies[proxyidx]
