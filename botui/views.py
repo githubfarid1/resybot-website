@@ -623,9 +623,11 @@ def botcheckrun_list(request):
     for idx, bot in enumerate(botcheckruns):
         stat = "Stopped"
         bgcolor = "bg-success"
+        
         if psutil.pid_exists(bot.pid):
-            stat = "Running"
-            bgcolor="bg-danger"
+            if psutil.Process(bot.pid).status() != 'zombie':
+                stat = "Running"
+                bgcolor="bg-danger"
         botcheckruns[idx].pidstatus = stat
         botcheckruns[idx].bgcolor = bgcolor
 
