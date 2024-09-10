@@ -150,6 +150,7 @@ class BotCheck(models.Model):
     retrysec = models.DecimalField(max_digits=3, decimal_places=2,
         validators=[MinValueValidator(0.01), MaxValueValidator(9.99)]
     )
+    sendmessage = models.BooleanField(default=False)
     account = models.ForeignKey(
         Account,
         db_column='account_id',
@@ -193,6 +194,7 @@ class BotCheckRun(models.Model):
     retrysec = models.DecimalField(max_digits=3, decimal_places=2,
         validators=[MinValueValidator(0.01), MaxValueValidator(9.99)]
     )
+    sendmessage = models.BooleanField(default=False)
     multiproxy_name = models.CharField(max_length=255, null=True, blank=True)
     multiproxy_value = models.CharField(max_length=255, null=True, blank=True)
     reservation_name = models.CharField(max_length=255, null=True, blank=True)
@@ -201,5 +203,12 @@ class BotCheckRun(models.Model):
     account_api_key = models.CharField(max_length=255, null=True, blank=True)
     account_token =  models.CharField(max_length=1000, null=True, blank=True)
     account_payment_method_id = models.IntegerField(null=True, blank=True)
-    pid = models.IntegerField(null=True, blank=True)
+    pid = models.IntegerField(null=True, blank=True, default=0)
+    task = models.IntegerField(default=0)
+    '''
+    1=run
+    2=stop
+    3=delete
+    
+    '''
 # Create your models here.

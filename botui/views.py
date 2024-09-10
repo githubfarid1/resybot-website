@@ -12,6 +12,7 @@ import psutil
 import linecache
 import time
 from django.conf import settings
+from django.db.models import Q
 
 if platform == "linux" or platform == "linux2":
     pass
@@ -591,14 +592,13 @@ def remove_botcheck(request, pk):
 
 def run_botcheck(request, pk):
     botcheck = get_object_or_404(BotCheck, pk=pk)
-    ret = BotCheckRun.objects.create(url=botcheck.url, startdate=botcheck.startdate, enddate=botcheck.enddate, seats=botcheck.seats, timewanted=botcheck.timewanted, hoursba=botcheck.hoursba, nonstop=botcheck.nonstop, reservation_name=botcheck.reservation.name, retrysec=botcheck.retrysec, minidle=botcheck.minidle, maxidle=botcheck.maxidle, account_email=botcheck.account.email, account_password=botcheck.account.password, account_api_key=botcheck.account.api_key, account_token=botcheck.account.token, account_payment_method_id=botcheck.account.payment_method_id, multiproxy_name=botcheck.multiproxy.name, multiproxy_value=botcheck.multiproxy.value)
-    # breakpoint()
-    fname = open(f"logs/checkbookrun_web_{ret.id}.log", "w")
-    commandlist = [PYLOC, "botmodules/resybotcheckbooking.py", "-id", '{}'.format(ret.id) ]
-    process = Popen(commandlist, stdout=fname)
-    print(" ".join(commandlist))
-    BotCheckRun.objects.filter(pk=ret.id).update(pid=process.pid)
-    print(process.pid)
+    ret = BotCheckRun.objects.create(url=botcheck.url, startdate=botcheck.startdate, enddate=botcheck.enddate, seats=botcheck.seats, timewanted=botcheck.timewanted, hoursba=botcheck.hoursba, nonstop=botcheck.nonstop, reservation_name=botcheck.reservation.name, retrysec=botcheck.retrysec, minidle=botcheck.minidle, maxidle=botcheck.maxidle, account_email=botcheck.account.email, account_password=botcheck.account.password, account_api_key=botcheck.account.api_key, account_token=botcheck.account.token, account_payment_method_id=botcheck.account.payment_method_id, multiproxy_name=botcheck.multiproxy.name, multiproxy_value=botcheck.multiproxy.value, task=1)
+    # fname = open(f"logs/checkbookrun_web_{ret.id}.log", "w")
+    # commandlist = [PYLOC, "botmodules/resybotcheckbooking.py", "-id", '{}'.format(ret.id) ]
+    # process = Popen(commandlist, stdout=fname)
+    # print(" ".join(commandlist))
+    # BotCheckRun.objects.filter(pk=ret.id).update(pid=process.pid)
+    # print(process.pid)
     return HttpResponse(
         status=204,
         headers={
@@ -619,18 +619,21 @@ def botcheckrun_list(request):
     if not request.user.is_authenticated:
         return redirect('login')
     
-    botcheckruns = BotCheckRun.objects.all()
+    botcheckruns = BotCheckRun.objects.filter(~Q(task=3)).all()
     for idx, bot in enumerate(botcheckruns):
         stat = "Stopped"
         bgcolor = "bg-success"
-        
-        if psutil.pid_exists(bot.pid):
-            if psutil.Process(bot.pid).status() != 'zombie':
-                stat = "Running"
-                bgcolor="bg-danger"
+            
+        # if bot.pid != 0 and psutil.pid_exists(bot.pid):
+        #     if psutil.Process(bot.pid).status() != 'zombie':
+        #         stat = "Running"
+        #         bgcolor="bg-danger"
+        if bot.task == 1 and bot.pid != -1:
+            stat = "Running"
+            bgcolor="bg-danger"
+
         botcheckruns[idx].pidstatus = stat
         botcheckruns[idx].bgcolor = bgcolor
-
 
     return render(request, 'botui/botcheckrun_list.html', {
         'botcheckruns': botcheckruns,
@@ -638,20 +641,23 @@ def botcheckrun_list(request):
 
 def remove_botcheckrun(request, pk):
     botcheckrun = get_object_or_404(BotCheckRun, pk=pk)
-    pid = botcheckrun.pid
-    
-    try:
-        proc = psutil.Process(int(pid))
-        proc.terminate()
-    except:
-        pass
+    botcheckrun.task = 3
+    botcheckrun.save()
 
-    botcheckrun.delete()
-    time.sleep(0.5)        
-    try:
-        os.remove(f"logs/checkbookrun_web_{pk}.log")
-    except:
-        pass
+    # pid = botcheckrun.pid
+    
+    # try:
+    #     proc = psutil.Process(int(pid))
+    #     proc.terminate()
+    # except:
+    #     pass
+
+    # botcheckrun.delete()
+    # time.sleep(0.5)        
+    # try:
+    #     os.remove(f"logs/checkbookrun_web_{pk}.log")
+    # except:
+    #     pass
 
     return HttpResponse(
         status=204,
@@ -685,12 +691,14 @@ def view_checkbookrun_log(request, pk):
 def stop_botcheckrun(request, pk):
     # breakpoint()
     botcheckrun = get_object_or_404(BotCheckRun, pk=pk)
-    pid = botcheckrun.pid
-    try:
-        proc = psutil.Process(int(pid))
-        proc.terminate()
-    except:
-        pass
+    # pid = botcheckrun.pid
+    # try:
+    #     proc = psutil.Process(int(pid))
+    #     proc.terminate()
+    # except:
+    #     pass
+    botcheckrun.task = 2
+    botcheckrun.save()
     return HttpResponse(
         status=204,
         headers={

@@ -20,6 +20,7 @@
                 <th scope="col">Ret.Sec</th>
                 <th scope="col">Min</th>
                 <th scope="col">Max</th>
+                <th scope="col">Send</th>
                 <th scope="col">Actions</th>
               </tr>
             </thead>            
@@ -42,6 +43,7 @@
                       <td>{{ d.retrysec }}</td>
                       <td>{{ d.minidle }}</td>
                       <td>{{ d.maxidle }}</td>
+                      <td>{{ d.sendmessage }}</td>
                       <td width="13%">
                         <button type="button" class="btn btn-sm btn-success"  hx-get="{% url 'botui_edit_botcheck' pk=d.pk %}" hx-target="#dialog">Edit</button>
                         <button style="border:none;"><form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><a class="btn btn-sm btn-danger" hx-delete="{% url 'botui_remove_botcheck' pk=d.pk %}" hx-confirm="Remove Account?">Delete</a></form></button>

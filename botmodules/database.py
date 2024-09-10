@@ -63,3 +63,29 @@ class Database:
     def getCheckBookingRun(self, id):
         self.cur.execute("SELECT * FROM botui_botcheckrun where id=?", (id,))
         return self.cur.fetchone()
+
+    def getCheckBookingRunAll(self):
+        self.cur.execute("SELECT * FROM botui_botcheckrun order by id")
+        return self.cur.fetchall()
+
+    def getTaskToRun(self):
+        self.cur.execute("SELECT * FROM botui_botcheckrun where task=1 AND pid=0")
+        return self.cur.fetchall()
+
+    def getTaskToStop(self):
+        self.cur.execute("SELECT * FROM botui_botcheckrun where task=2 AND pid<>-1")
+        return self.cur.fetchall()
+
+    def getTaskToDelete(self):
+        self.cur.execute("SELECT * FROM botui_botcheckrun where task=3")
+        return self.cur.fetchall()
+
+    def updateBotrunPid(self, pid, id):
+        sql_query = """UPDATE botui_botcheckrun SET pid=? WHERE id=?"""
+        self.cur.execute(sql_query, (pid, id))
+        self.con.commit()
+
+    def deleteBotrun(self, id):
+        sql_query = """DELETE FROM botui_botcheckrun WHERE id=?"""
+        self.cur.execute(sql_query, (id, ))
+        self.con.commit()

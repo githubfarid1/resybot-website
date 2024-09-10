@@ -79,7 +79,11 @@
                     {% render_field form.multiproxy class="form-control" placeholder="" %}
                     <div class="invalid-feedback">{{ form.multiproxy.errors|first }}</div>
                   </div>
-            
+                  <div class="mb-2">
+                    <label for="{{ form.sendmessage.id_for_label }}" class="form-label">Send Message</label>
+                    {% render_field form.sendmessage class="form-control" placeholder="" %}
+                    <div class="invalid-feedback">{{ form.sendmessage.errors|first }}</div>
+                  </div>
             </div>
         </div>
     </div>        

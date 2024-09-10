@@ -66,10 +66,10 @@ class BotCheckForm(forms.ModelForm):
     minidle = forms.DecimalField(required=True, initial=3.0)
     maxidle = forms.DecimalField(required=True, initial=10.0)
     retrysec = forms.DecimalField(required=True, initial=0.5)
-
+    sendmessage = forms.ChoiceField(choices = TRUE_FALSE_CHOICES,  initial=False, widget=forms.Select(), required=True)
     reservation = forms.ModelChoiceField(queryset=ReservationType.objects.all(), initial="<Not Set>")
     account = forms.ModelChoiceField(queryset=Account.objects.all(), initial="<Not Set>")
     multiproxy = forms.ModelChoiceField(queryset=Multiproxy.objects.all(), initial="<Not Set>")
     class Meta:
         model = BotCheck
-        fields = ['url',  'startdate',  'enddate', 'timewanted',  'hoursba',  'seats',  'reservation',  'nonstop', 'retrysec',  'minidle',  'maxidle',  'account',  'multiproxy']
+        fields = ['url',  'startdate',  'enddate', 'timewanted',  'hoursba',  'seats',  'reservation',  'nonstop', 'retrysec',  'minidle',  'maxidle',  'account',  'multiproxy', 'sendmessage']
