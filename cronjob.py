@@ -20,7 +20,7 @@ elif platform == "win32":
     PYLOC = PYTHON_EXE
     PIPLOC = os.getcwd() + os.sep + r"venv\Scripts\pip.exe"
 
-db = Database(os.getenv('DB_FOLDER') + "db.sqlite3")
+db = Database(os.getenv('BASE_FOLDER') + "db.sqlite3")
 
 def updatepidstatus():
     for data in db.getCheckBookingRunAll():
@@ -35,8 +35,8 @@ def updatepidstatus():
 def runcheckbooking():
     for data in db.getTaskToRun():
         print("run")
-        fname = open(f"logs/checkbookrun_web_{data[0]}.log", "w")
-        commandlist = [PYLOC, "botmodules/resybotcheckbooking.py", "-id", '{}'.format(data[0]) ]
+        fname = open(f"{os.getenv('BASE_FOLDER')}logs/checkbookrun_web_{data[0]}.log", "w")
+        commandlist = [PYLOC, f"{os.getenv('BASE_FOLDER')}botmodules/resybotcheckbooking.py", "-id", '{}'.format(data[0]) ]
         process = Popen(commandlist, stdout=fname)
         # print(" ".join(commandlist))
         db.updateBotrunPid(id=data[0], pid=process.pid)
@@ -66,7 +66,7 @@ def delcheckbooking():
             pass
         time.sleep(0.5)        
         try:
-            os.remove(f"logs/checkbookrun_web_{id}.log")
+            os.remove(f"{os.getenv('BASE_FOLDER')}logs/checkbookrun_web_{id}.log")
         except:
             pass
         db.deleteBotrun(id)
