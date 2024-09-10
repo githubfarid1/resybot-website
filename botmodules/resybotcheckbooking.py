@@ -18,8 +18,11 @@ from playwright.sync_api import sync_playwright
 from playwright_stealth import stealth_sync
 import subprocess
 from database import Database
+from dotenv import load_dotenv
+load_dotenv()
 
-db = Database("db.sqlite3")
+
+db = Database(os.getenv('BASE_FOLDER') + "db.sqlite3")
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
@@ -36,7 +39,7 @@ def intercept_request(request):
     if "https://api.resy.com/2/config" in request.url:
         try:
             api_key=str(request.headers['authorization']).replace('ResyAPI api_key=', "").replace('"','')
-            f = open("logs/api_key.log", "w")
+            f = open(f"{os.getenv('BASE_FOLDER')}logs/api_key.log", "w")
             f.write(api_key)
         except:
             return request        
@@ -132,7 +135,7 @@ def main():
     start_date = datetime.strptime(startdate, '%Y-%m-%d').date()
     end_date = datetime.strptime(enddate, '%Y-%m-%d').date()
     get_api_key()
-    file = open("logs/api_key.log", "r")
+    file = open(f"{os.getenv('BASE_FOLDER')}logs/api_key.log", "r")
     # breakpoint()
     api_key = file.read()
     https_proxy = ''
@@ -157,7 +160,7 @@ def main():
         resy_config_booking = {"api_key": account_api_key, "token": account_token, "payment_method_id": account_payment_method_id, "email":account_email, "password":account_password, "http_proxy": http_proxy, "https_proxy": https_proxy, "retry_count": 3, "seconds_retry": float(retsecs)}
     
     strdateyesterday = datetime.strftime(datetime.now()-timedelta(days=1), '%Y-%m-%d')
-    flog = open(f"logs/checkbookrun_terminal_{id}.log", "w")
+    flog = open(f"{os.getenv('BASE_FOLDER')}logs/checkbookrun_terminal_{id}.log", "w")
     stoptime = datetime.now() + timedelta(minutes = 5)
     proxyidx = 1
     try:
