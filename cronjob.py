@@ -24,8 +24,8 @@ db = Database("db.sqlite3")
 
 def updatepidstatus():
     for data in db.getCheckBookingRunAll():
-        pid = data[19]
-        id = data[0]
+        pid = data['pid']
+        id = data['id']
         if pid !=0 and psutil.pid_exists(pid):
             if psutil.Process(pid).status() == 'zombie':
                 db.updateBotrunPid(id=id, pid=-1)                
@@ -44,8 +44,8 @@ def runcheckbooking():
 def stopcheckbooking():
     for data in db.getTaskToStop():
         print("stop")
-        pid = data[19]
-        id = data[0]
+        pid = data['pid']
+        id = data['id']
         try:
             proc = psutil.Process(int(pid))
             proc.terminate()
@@ -57,8 +57,8 @@ def stopcheckbooking():
 def delcheckbooking():
     for data in db.getTaskToDelete():
         print("del")
-        pid = data[19]
-        id = data[0]
+        pid = data['pid']
+        id = data['id']
         try:
             proc = psutil.Process(int(pid))
             proc.terminate()

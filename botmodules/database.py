@@ -11,7 +11,9 @@ class Database:
     def __init__(self, db):
         # creating database connection
         self.con = sqlite3.connect(db)
+        # self.con.row_factory = sqlite3.Row
         self.cur = self.con.cursor()
+        self.cur.row_factory = sqlite3.Row
 
     def getBotRunById(self, id):
         self.cur.execute("SELECT * FROM botui_botrun WHERE id=?", (id,))
