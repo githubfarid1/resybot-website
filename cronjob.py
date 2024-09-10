@@ -20,7 +20,7 @@ elif platform == "win32":
     PYLOC = PYTHON_EXE
     PIPLOC = os.getcwd() + os.sep + r"venv\Scripts\pip.exe"
 
-db = Database("db.sqlite3")
+db = Database(os.getenv('DB_FOLDER') + "db.sqlite3")
 
 def updatepidstatus():
     for data in db.getCheckBookingRunAll():
