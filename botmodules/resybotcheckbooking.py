@@ -19,6 +19,7 @@ from playwright_stealth import stealth_sync
 import subprocess
 from database import Database
 from dotenv import load_dotenv
+from telegram_text import PlainText, Bold, Italic, Underline
 load_dotenv()
 
 
@@ -45,13 +46,17 @@ def intercept_request(request):
             return request        
     return request
 
-def convert24(time):
-    t = datetime.strptime(time, '%I:%M %p')
-    return t.strftime('%H:%M')
+def send_to_telegram(message):
 
-def convert24wsecond(time):
-    t = datetime.strptime(time, '%I:%M:%S %p')
-    return t.strftime('%H:%M:%S')
+    apiToken = os.getenv('TELEGRAM_TOKEN')
+    chatID = os.getenv('TELEGRAM_CHAT_ID')
+    apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
+
+    try:
+        response = requests.post(apiURL, json={'chat_id': chatID, 'text': message, "parse_mode": "MarkdownV2"})
+        print(response.text)
+    except Exception as e:
+        print(e)
 
 def get_api_key():
     with sync_playwright() as pr:
@@ -105,25 +110,26 @@ def main():
 
     args = parser.parse_args()
     data = db.getCheckBookingRun(id=args.id)
-    id = data[0]
-    url = data[1]
-    startdate = data[2]
-    enddate = data[3]
-    seats = data[4]
-    timewanted = data[5]
-    hoursba = data[6]
-    nonstop = data[7]
-    minidle = data[8]
-    maxidle = data[9]
-    retsecs = data[10]
-    proxy_name = data[11]    
-    proxy_value = data[12]
-    reservation_name = data[13]
-    account_email = data[14]
-    account_password = data[15]
-    account_token = data[17]
-    account_api_key = data[16]
-    account_payment_method_id = data[18]
+    id = data['id']
+    url = data['url']
+    startdate = data['startdate']
+    enddate = data['enddate']
+    seats = data['seats']
+    timewanted = data['timewanted']
+    hoursba = data['hoursba']
+    nonstop = data['nonstop']
+    minidle = data['minidle']
+    maxidle = data['maxidle']
+    retsecs = data['retrysec']
+    proxy_name = data['multiproxy_name']    
+    proxy_value = data['multiproxy_value']
+    reservation_name = data['reservation_name']
+    account_email = data['account_email']
+    account_password = data['account_password']
+    account_token = data['account_token']
+    account_api_key = data['account_api_key']
+    account_payment_method_id = data['account_payment_method_id']
+    sendmessage = data['sendmessage']
 
     # account_id = data[11]
     # reservation_id = data[12]
@@ -227,7 +233,11 @@ def main():
                             myTable.add_row([dtime, reservation])
                         print(myTable)
                         flog.write(str(myTable))
-                        # breakpoint()
+                        if sendmessage == True:
+                            dsearch = single_date.strftime("%Y-%m-%d")
+                            urlstr = f"{url}?{dsearch}&seats={seats}" 
+                            tmpstr = PlainText(f"Found slot at {dsearch}\n{str(myTable)}") 
+                            send_to_telegram(tmpstr.to_markdown() + f"\n[Go To Resy]({urlstr})")
                         if account_email != "<Not Set>":
                             try:
                                 tmpstr = "Trying to Book.."

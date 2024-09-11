@@ -12,13 +12,8 @@ elif platform == "win32":
 	from subprocess import CREATE_NEW_CONSOLE
 
 load_dotenv()
-PYTHON_EXE = os.getcwd() + os.sep + r"venv\Scripts\python.exe"
-if platform == "linux" or platform == "linux2":
-    PYLOC = os.getenv('PYTHON_PATH')
-    PIPLOC = os.getenv('PIP_PATH')
-elif platform == "win32":
-    PYLOC = PYTHON_EXE
-    PIPLOC = os.getcwd() + os.sep + r"venv\Scripts\pip.exe"
+PYLOC = os.getenv('PYTHON_PATH')
+PIPLOC = os.getenv('PIP_PATH')
 
 db = Database(os.getenv('BASE_FOLDER') + "db.sqlite3")
 

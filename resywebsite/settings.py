@@ -158,7 +158,7 @@ AUTO_LOGOUT = {
     'REDIRECT_TO_LOGIN_IMMEDIATELY': True,
 }
 ALLOWED_HOSTS = ['66.135.15.24', 'pydev.my.id', 'localhost', '127.0.0.1']
-PYTHON_PATH = "../venv/bin/python"
-PIP_PATH = "../venv/bin/pip"
+PYTHON_PATH = env('PYTHON_PATH')
+PIP_PATH = env('PIP_PATH')
 TELEGRAM_TOKEN = env('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = env('TELEGRAM_CHAT_ID')
