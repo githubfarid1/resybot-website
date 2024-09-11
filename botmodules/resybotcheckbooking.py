@@ -20,7 +20,17 @@ import subprocess
 from database import Database
 from dotenv import load_dotenv
 from telegram_text import PlainText, Bold, Italic, Underline
+
 load_dotenv()
+PROXY_PL={
+  "server": "http://residential-proxy.scrapeops.io:8181",
+  "username": "scrapeops",
+  "password": "f2d43fe5-5bee-41ab-83f9-da70ae59c60a"
+}
+PROXY_REQUEST = {
+    "http":"http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181",
+    "https": "http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181"
+}
 
 
 db = Database(os.getenv('BASE_FOLDER') + "db.sqlite3")
@@ -69,7 +79,7 @@ def get_api_key():
         wargs.append('--disable-web-security')
         wargs.append('--start-maximized')
         
-        browser =  pr.chromium.launch(headless=True, args=wargs)
+        browser =  pr.chromium.launch(headless=True, args=wargs, proxy=PROXY_PL)
         page = browser.new_page()
         stealth_sync(page)
         page.on("request", lambda request: intercept_request(request))
