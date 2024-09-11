@@ -12,4 +12,4 @@ def send_to_telegram(message):
     except Exception as e:
         print(e)
 
-send_to_telegram("Hello from Python! [inline URL](http://www.example.com/)")
+send_to_telegram("Hello from Python [inline URL](http://www.example.com/)")
