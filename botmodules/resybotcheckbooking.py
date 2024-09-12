@@ -45,7 +45,6 @@ sys.path.append(parent)
 engine = create_engine('mysql+pymysql://{}:{}@localhost:{}/{}'.format(os.getenv('DB_USERNAME'), os.getenv('DB_PASS'), os.getenv('DB_PORT'), os.getenv('DB_NAME')) , echo=False)
 Session = sessionmaker(bind = engine)
 session = Session()
-
 CLOSE_MESSAGE = ""
 logger = logging.getLogger(__name__)
 logger.setLevel("DEBUG")
@@ -86,8 +85,8 @@ def get_api_key():
         wargs.append('--disable-web-security')
         wargs.append('--start-maximized')
         
-        browser =  pr.chromium.launch(headless=True, args=wargs, proxy=PROXY_PL)
-        # browser =  pr.chromium.launch(headless=True, args=wargs)
+        # browser =  pr.chromium.launch(headless=True, args=wargs, proxy=PROXY_PL)
+        browser =  pr.chromium.launch(headless=True, args=wargs)
 
         page = browser.new_page()
         stealth_sync(page)
@@ -126,9 +125,11 @@ def main():
     parser = argparse.ArgumentParser(description="Resy Bot Check")
 
     parser.add_argument('-id', '--id', type=str,help="Record ID")
+    parser.add_argument('-apikey', '--apikey', type=str,help="Resy Apikey")
 
     args = parser.parse_args()
     # data = db.getCheckBookingRun(id=args.id)
+     
     data = session.query(BotCheckRun).filter(BotCheckRun.id==args.id).one()
     id = data.id
     url = data.url
@@ -150,11 +151,6 @@ def main():
     account_api_key = data.account_api_key
     account_payment_method_id = data.account_payment_method_id
     sendmessage = data.sendmessage
-
-    # account_id = data[11]
-    # reservation_id = data[12]
-    # multiproxy_id = data[13]
-    # reservation = db.getReservation(reservation_id)
     if reservation_name == '<Not Set>':
         reservation_name = None
 
@@ -162,12 +158,12 @@ def main():
     # end_date = datetime.strptime(enddate, '%Y-%m-%d').date()
     start_date = startdate
     end_date = enddate
-
-    get_api_key()
-
-    file = open(f"{os.getenv('BASE_FOLDER')}logs/api_key.log", "r")
-    # breakpoint()
-    api_key = file.read()
+    if not args.apikey:
+        get_api_key()
+        file = open(f"{os.getenv('BASE_FOLDER')}logs/api_key.log", "r")
+        api_key = file.read()
+    else:
+        api_key = args.apikey
     https_proxy = ''
     http_proxy = ''
     # multiproxy = db.getMultiproxy(id=multiproxy_id)

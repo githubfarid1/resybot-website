@@ -24,6 +24,7 @@ Session = sessionmaker(bind = engine)
 session = Session()
 PYLOC = os.getenv('PYTHON_PATH')
 PIPLOC = os.getenv('PIP_PATH')
+RESY_API_KEY='VbWk7s3L4KiK5fzlO7JD3Q5EYolJI7n5'
 
 def updatepidstatus():
     for data in session.query(BotCheckRun).all():
@@ -43,7 +44,7 @@ def runcheckbooking():
         print("run")
         id = data.id
         fname = open(f"{os.getenv('BASE_FOLDER')}logs/checkbookrun_web_{id}.log", "w")
-        commandlist = [PYLOC, f"{os.getenv('BASE_FOLDER')}botmodules/resybotcheckbooking.py", "-id", '{}'.format(id) ]
+        commandlist = [PYLOC, f"{os.getenv('BASE_FOLDER')}botmodules/resybotcheckbooking.py", "-id", '{}'.format(id), "-apikey", '{}'.format(RESY_API_KEY) ]
         process = Popen(commandlist, stdout=fname)
         # print(" ".join(commandlist))
         # db.updateBotrunPid(id=data[0], pid=process.pid)
