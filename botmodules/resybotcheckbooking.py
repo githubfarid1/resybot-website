@@ -17,9 +17,13 @@ from prettytable import PrettyTable
 from playwright.sync_api import sync_playwright
 from playwright_stealth import stealth_sync
 import subprocess
-from database import Database
+# from database import Database
 from dotenv import load_dotenv
 from telegram_text import PlainText, Bold, Italic, Underline
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from dbclass import Account, Multiproxy, ReservationType, BotCheck, BotCheckRun
+
 
 load_dotenv()
 PROXY_PL={
@@ -33,11 +37,14 @@ PROXY_REQUEST = {
 }
 
 
-db = Database(os.getenv('BASE_FOLDER') + "db.sqlite3")
+# db = Database(os.getenv('BASE_FOLDER') + "db.sqlite3")
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
 # from settings import CLOSE_MESSAGE, CONTINUE_MESSAGE, TRY_MESSAGE, MIN_IDLE_TIME, MAX_IDLE_TIME
+engine = create_engine('mysql+pymysql://{}:{}@localhost:{}/{}'.format(os.getenv('DB_USERNAME'), os.getenv('DB_PASS'), os.getenv('DB_PORT'), os.getenv('DB_NAME')) , echo=False)
+Session = sessionmaker(bind = engine)
+session = Session()
 
 CLOSE_MESSAGE = ""
 logger = logging.getLogger(__name__)
@@ -80,6 +87,8 @@ def get_api_key():
         wargs.append('--start-maximized')
         
         browser =  pr.chromium.launch(headless=True, args=wargs, proxy=PROXY_PL)
+        # browser =  pr.chromium.launch(headless=True, args=wargs)
+
         page = browser.new_page()
         stealth_sync(page)
         page.on("request", lambda request: intercept_request(request))
@@ -119,27 +128,28 @@ def main():
     parser.add_argument('-id', '--id', type=str,help="Record ID")
 
     args = parser.parse_args()
-    data = db.getCheckBookingRun(id=args.id)
-    id = data['id']
-    url = data['url']
-    startdate = data['startdate']
-    enddate = data['enddate']
-    seats = data['seats']
-    timewanted = data['timewanted']
-    hoursba = data['hoursba']
-    nonstop = data['nonstop']
-    minidle = data['minidle']
-    maxidle = data['maxidle']
-    retsecs = data['retrysec']
-    proxy_name = data['multiproxy_name']    
-    proxy_value = data['multiproxy_value']
-    reservation_name = data['reservation_name']
-    account_email = data['account_email']
-    account_password = data['account_password']
-    account_token = data['account_token']
-    account_api_key = data['account_api_key']
-    account_payment_method_id = data['account_payment_method_id']
-    sendmessage = data['sendmessage']
+    # data = db.getCheckBookingRun(id=args.id)
+    data = session.query(BotCheckRun).filter(BotCheckRun.id==args.id).one()
+    id = data.id
+    url = data.url
+    startdate = data.startdate
+    enddate = data.enddate
+    seats = data.seats
+    timewanted = data.timewanted
+    hoursba = data.hoursba
+    nonstop = data.nonstop
+    minidle = data.minidle
+    maxidle = data.maxidle
+    retsecs = data.retrysec
+    proxy_name = data.multiproxy_name
+    proxy_value = data.multiproxy_value
+    reservation_name = data.reservation_name
+    account_email = data.account_email
+    account_password = data.account_password
+    account_token = data.account_token
+    account_api_key = data.account_api_key
+    account_payment_method_id = data.account_payment_method_id
+    sendmessage = data.sendmessage
 
     # account_id = data[11]
     # reservation_id = data[12]
@@ -148,9 +158,13 @@ def main():
     if reservation_name == '<Not Set>':
         reservation_name = None
 
-    start_date = datetime.strptime(startdate, '%Y-%m-%d').date()
-    end_date = datetime.strptime(enddate, '%Y-%m-%d').date()
+    # start_date = datetime.strptime(startdate, '%Y-%m-%d').date()
+    # end_date = datetime.strptime(enddate, '%Y-%m-%d').date()
+    start_date = startdate
+    end_date = enddate
+
     get_api_key()
+
     file = open(f"{os.getenv('BASE_FOLDER')}logs/api_key.log", "r")
     # breakpoint()
     api_key = file.read()
@@ -204,7 +218,6 @@ def main():
             flog.write("\n")
             for single_date in daterange(start_date, end_date):
                 searchdate = single_date.strftime("%Y-%m-%d")
-                # breakpoint()
                 tmpstr = f"Date Searching: {searchdate}"
                 print(tmpstr)
                 flog.write(tmpstr + "\n")
@@ -216,8 +229,8 @@ def main():
                 "prefer_early": False,
                 "ideal_date": searchdate,
                 #   "days_in_advance": 14,
-                "ideal_hour": int(timewanted.split(":")[0]),
-                "ideal_minute": int(timewanted.split(":")[1]),
+                "ideal_hour": int(timewanted.strftime("%H:%M:%S").split(":")[0]),
+                "ideal_minute": int(timewanted.strftime("%H:%M:%S").split(":")[1]),
                 "preferred_type": reservation_name,
                 },
                 "expected_drop_hour": 9,
@@ -230,6 +243,7 @@ def main():
                 try:
                     myTable = PrettyTable(["TIME","RESER. TYPE"])
                     myTable.align ="l"
+                    
                     slots = check_now(resy_config=resy_config, reservation_config=reservation_config)
                     if len(slots) != 0:
                         print(searchdate)
