@@ -100,24 +100,24 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-if os.environ.get('DB_ENGINE') and os.environ.get('DB_ENGINE') == "mysql":
-    DATABASES = { 
-      'default': {
-        'ENGINE'  : 'django.db.backends.mysql', 
-        'NAME'    : os.getenv('DB_NAME'),
-        'USER'    : os.getenv('DB_USERNAME'),
-        'PASSWORD': os.getenv('DB_PASS'),
-        'HOST'    : os.getenv('DB_HOST'),
-        'PORT'    : os.getenv('DB_PORT'),
-        }, 
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+# if os.environ.get('DB_ENGINE') and os.environ.get('DB_ENGINE') == "mysql":
+#     DATABASES = { 
+#       'default': {
+#         'ENGINE'  : 'django.db.backends.mysql', 
+#         'NAME'    : os.getenv('DB_NAME'),
+#         'USER'    : os.getenv('DB_USERNAME'),
+#         'PASSWORD': os.getenv('DB_PASS'),
+#         'HOST'    : os.getenv('DB_HOST'),
+#         'PORT'    : os.getenv('DB_PORT'),
+#         }, 
+#     }
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'db.sqlite3',
+#         }
+#     }
 
 
 # Password validation
