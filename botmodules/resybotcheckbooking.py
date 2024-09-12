@@ -248,6 +248,7 @@ def main():
                         print(tmpstr)
                         flog.write(tmpstr + "\n")
                         for slot in slots:
+                            breakpoint()
                             dtime = str(slot.config.token).split("/")[-3][:5]
                             reservation = str(slot.config.token).split("/")[-1]
                             myTable.add_row([dtime, reservation])
