@@ -23,7 +23,7 @@ from telegram_text import PlainText, Bold, Italic, Underline
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dbclass import Account, Multiproxy, ReservationType, BotCheck, BotCheckRun
-
+from urllib.parse import quote, unquote, quote_plus, unquote_plus
 
 load_dotenv()
 PROXY_PL={
@@ -35,7 +35,7 @@ PROXY_REQUEST = {
     "http":"http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181",
     "https": "http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181"
 }
-
+# "rgs://resy/64869/1802535/2/2024-09-13/2024-09-13/21:30:00/2/Dining+room"
 
 # db = Database(os.getenv('BASE_FOLDER') + "db.sqlite3")
 current = os.path.dirname(os.path.realpath(__file__))
@@ -47,7 +47,7 @@ Session = sessionmaker(bind = engine)
 session = Session()
 CLOSE_MESSAGE = ""
 logger = logging.getLogger(__name__)
-logger.setLevel("DEBUG")
+logger.setLevel("INFO")
 
 def random_delay(min_seconds, max_seconds):
     return random.uniform(min_seconds, max_seconds)
@@ -69,10 +69,25 @@ def send_to_telegram(message):
     apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
 
     try:
-        response = requests.post(apiURL, json={'chat_id': chatID, 'text': message, "parse_mode": "MarkdownV2"})
-        print(response.text)
+        response = requests.post(apiURL, json={'chat_id': chatID, 'text': message, "parse_mode": "HTML"})
+        # print(response.text)
     except Exception as e:
         print(e)
+
+def parse_to_html(slot, url, seats, venue_id):
+    restaurant_name = str(url).split("/")[-1]
+    tokensplit = slot.config.token.split("/")
+    mdict = {"venueName":restaurant_name,"featureRecaptcha":False,"badge":None,"colors":{"background":None,"font":None},"isGda":False,"serviceTypeId":2,"templateId":tokensplit[4],"time":f"{tokensplit[6]} {tokensplit[8]}","token":slot.config.token,"type":slot.config.type,"hasAddOns":False,"hasMenus":False,"serviceTypeName":"","serviceTypeKey":""}
+    mdictstr = json.dumps(mdict).replace(': ',':').replace(' "','"')
+    link = f'{quote_plus(mdictstr)}&date={tokensplit[6]}&seats={seats}&tableConfigId={quote_plus(slot.config.token)}&venueId={venue_id}'
+    link = f'https://widgets.resy.com/#/reservation-details?reservation={link}'
+    # breakpoint()
+    html = f"Restaurant Name: <strong>{restaurant_name}</strong>\n"
+    html += f"Date: <strong>{tokensplit[6]}</strong>\n"
+    html += f"Time: <strong>{tokensplit[8][0:-3]}</strong>\n"
+    html += f"Seats: <strong>{seats}</strong>\n"
+    html += f'<a href="{link}">Booking</a>'
+    return html
 
 def get_api_key():
     with sync_playwright() as pr:
@@ -166,21 +181,15 @@ def main():
         api_key = args.apikey
     https_proxy = ''
     http_proxy = ''
-    # multiproxy = db.getMultiproxy(id=multiproxy_id)
     proxies = []
     if  proxy_name != '<Not Set>':
-        # proxy = db.getMultiproxy(proxyname)
-        # breakpoint()
         proxies = proxy_value.split("\n")
         http_proxy = proxies[0]
         https_proxy = proxies[0]
     
     resy_config = {"api_key": api_key, "token": '', "payment_method_id": 999999, "email":'', "password":'', "http_proxy": http_proxy, "https_proxy": https_proxy, "retry_count": 1, "seconds_retry": float(retsecs)}
-    # resy_config = {"api_key": api_key, "token": '', "payment_method_id": 999999, "email":'', "password":'', "http_proxy": '', "https_proxy": '', "retry_count": 1, "seconds_retry": float(retsecs)}
 
     venue_id = get_venue_id(resy_config=resy_config, urladdress=url)
-    # breakpoint()
-    # accountdata = db.getAccount(id=account_id)
 
     if account_email != "<Not Set>":
         resy_config_booking = {"api_key": account_api_key, "token": account_token, "payment_method_id": account_payment_method_id, "email":account_email, "password":account_password, "http_proxy": http_proxy, "https_proxy": https_proxy, "retry_count": 3, "seconds_retry": float(retsecs)}
@@ -247,18 +256,22 @@ def main():
                         tmpstr = f"Found {len(slots)} Slots"
                         print(tmpstr)
                         flog.write(tmpstr + "\n")
+                        htmllist = []
                         for slot in slots:
-                            breakpoint()
                             dtime = str(slot.config.token).split("/")[-3][:5]
                             reservation = str(slot.config.token).split("/")[-1]
+                            html = parse_to_html(slot=slot, url=url, seats=seats, venue_id=venue_id)
                             myTable.add_row([dtime, reservation])
+                            htmllist.append(html)
+
                         print(myTable)
                         flog.write(str(myTable))
                         if sendmessage == True:
                             dsearch = single_date.strftime("%Y-%m-%d")
                             urlstr = f"{url}?{dsearch}&seats={seats}" 
-                            tmpstr = PlainText(f"Found slot at {dsearch}\n{str(myTable)}") 
-                            send_to_telegram(tmpstr.to_markdown() + f"\n[Go To Resy]({urlstr})")
+                            for html in htmllist:
+                                # breakpoint()
+                                send_to_telegram(html)
                         if account_email != "<Not Set>":
                             try:
                                 tmpstr = "Trying to Book.."
