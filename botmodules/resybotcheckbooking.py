@@ -82,7 +82,7 @@ def parse_to_html(slot, url, seats, venue_id, username):
     link = f'{quote_plus(mdictstr)}&date={tokensplit[6]}&seats={seats}&tableConfigId={quote_plus(slot.config.token)}&venueId={venue_id}'
     link = f'https://widgets.resy.com/#/reservation-details?reservation={link}'
     # breakpoint()
-    html = f"Username: <strong>@{username}</strong>\n"
+    # html = f"Username: <strong>@{username}</strong>\n"
     html += f"Restaurant Name: <strong>{restaurant_name}</strong>\n"
     html += f"Date: <strong>{tokensplit[6]}</strong>\n"
     html += f"Time: <strong>{tokensplit[8][0:-3]}</strong>\n"
