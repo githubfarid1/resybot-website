@@ -74,7 +74,7 @@ def send_to_telegram(message):
     except Exception as e:
         print(e)
 
-def parse_to_html(slot, url, seats, venue_id):
+def parse_to_html(slot, url, seats, venue_id, username):
     restaurant_name = str(url).split("/")[-1]
     tokensplit = slot.config.token.split("/")
     mdict = {"venueName":restaurant_name,"featureRecaptcha":False,"badge":None,"colors":{"background":None,"font":None},"isGda":False,"serviceTypeId":2,"templateId":tokensplit[4],"time":f"{tokensplit[6]} {tokensplit[8]}","token":slot.config.token,"type":slot.config.type,"hasAddOns":False,"hasMenus":False,"serviceTypeName":"","serviceTypeKey":""}
@@ -82,7 +82,8 @@ def parse_to_html(slot, url, seats, venue_id):
     link = f'{quote_plus(mdictstr)}&date={tokensplit[6]}&seats={seats}&tableConfigId={quote_plus(slot.config.token)}&venueId={venue_id}'
     link = f'https://widgets.resy.com/#/reservation-details?reservation={link}'
     # breakpoint()
-    html = f"Restaurant Name: <strong>{restaurant_name}</strong>\n"
+    html = f"Username: <strong>@{username}</strong>\n"
+    html += f"Restaurant Name: <strong>{restaurant_name}</strong>\n"
     html += f"Date: <strong>{tokensplit[6]}</strong>\n"
     html += f"Time: <strong>{tokensplit[8][0:-3]}</strong>\n"
     html += f"Seats: <strong>{seats}</strong>\n"
@@ -166,6 +167,7 @@ def main():
     account_api_key = data.account_api_key
     account_payment_method_id = data.account_payment_method_id
     sendmessage = data.sendmessage
+    username = data.username
     if reservation_name == '<Not Set>':
         reservation_name = None
 
@@ -260,7 +262,7 @@ def main():
                         for slot in slots:
                             dtime = str(slot.config.token).split("/")[-3][:5]
                             reservation = str(slot.config.token).split("/")[-1]
-                            html = parse_to_html(slot=slot, url=url, seats=seats, venue_id=venue_id)
+                            html = parse_to_html(slot=slot, url=url, seats=seats, venue_id=venue_id, username=username)
                             myTable.add_row([dtime, reservation])
                             htmllist.append(html)
 

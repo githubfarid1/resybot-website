@@ -49,7 +49,7 @@ class BotCommandForm(forms.ModelForm):
 class MultiproxyForm(forms.ModelForm):
     class Meta:
         model = Multiproxy
-        fields = ['name', 'value']
+        fields = ['name', 'value', 'value2']
 
 class BotCheckForm(forms.ModelForm):
     TRUE_FALSE_CHOICES = (

@@ -13,19 +13,13 @@ import linecache
 import time
 from django.conf import settings
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 
 if platform == "linux" or platform == "linux2":
     pass
 elif platform == "win32":
 	from subprocess import CREATE_NEW_CONSOLE
 
-# PYTHON_EXE = os.getcwd() + os.sep + r"venv\Scripts\python.exe"
-# if platform == "linux" or platform == "linux2":
-#     PYLOC = settings.PYTHON_PATH
-#     PIPLOC = settings.PIP_PATH
-# elif platform == "win32":
-#     PYLOC = PYTHON_EXE
-#     PIPLOC = os.getcwd() + os.sep + r"venv\Scripts\pip.exe"
 
 PYLOC = settings.PYTHON_PATH
 PIPLOC = settings.PIP_PATH
@@ -46,9 +40,8 @@ def run_module(comlist):
 
 # Create your views here.
 
+@login_required(login_url="login")
 def show_reservations(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
     context = {
     }
     return render(request=request, template_name='botui/show_reservations.html', context=context)
@@ -188,9 +181,8 @@ def remove_proxy(request, pk):
             })
         })
 
+@login_required(login_url="login")
 def show_accounts(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
     context = {
     }
     return render(request=request, template_name='botui/show_accounts.html', context=context)
@@ -450,10 +442,8 @@ def view_botrun_log(request, pk):
         "strlog": strlog
     })
 
-
+@login_required(login_url="login")
 def show_multiproxies(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
     context = {
     }
     return render(request=request, template_name='botui/show_multiproxies.html', context=context)
@@ -522,21 +512,20 @@ def remove_multiproxy(request, pk):
             })
         })
 
+@login_required(login_url="login")
 def show_botchecks(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
     context = {
     }
     return render(request=request, template_name='botui/show_botchecks.html', context=context)
 
+@login_required(login_url="login")
 def botcheck_list(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
     botchecks = BotCheck.objects.all()
     return render(request, 'botui/botcheck_list.html', {
         'data': botchecks,
     })
 
+@login_required(login_url="login")
 def add_botcheck(request):
     if request.method == "POST":
         form = BotCheckForm(request.POST)
@@ -557,6 +546,7 @@ def add_botcheck(request):
         'module': 'Add Data'
     })
 
+@login_required(login_url="login")
 def edit_botcheck(request, pk):
     botcheck = get_object_or_404(BotCheck, pk=pk)
     # return HttpResponse(year.id)
@@ -581,6 +571,7 @@ def edit_botcheck(request, pk):
         'module': 'Edit Data'
     })
 
+@login_required(login_url="login")
 def remove_botcheck(request, pk):
     botcheck = get_object_or_404(BotCheck, pk=pk)
     botcheck.delete()
@@ -593,9 +584,10 @@ def remove_botcheck(request, pk):
             })
         })
 
+@login_required(login_url="login")
 def run_botcheck(request, pk):
     botcheck = get_object_or_404(BotCheck, pk=pk)
-    ret = BotCheckRun.objects.create(url=botcheck.url, startdate=botcheck.startdate, enddate=botcheck.enddate, seats=botcheck.seats, timewanted=botcheck.timewanted, hoursba=botcheck.hoursba, nonstop=botcheck.nonstop, reservation_name=botcheck.reservation.name, retrysec=botcheck.retrysec, minidle=botcheck.minidle, maxidle=botcheck.maxidle, account_email=botcheck.account.email, account_password=botcheck.account.password, account_api_key=botcheck.account.api_key, account_token=botcheck.account.token, account_payment_method_id=botcheck.account.payment_method_id, multiproxy_name=botcheck.multiproxy.name, multiproxy_value=botcheck.multiproxy.value, task=1, sendmessage=botcheck.sendmessage)
+    ret = BotCheckRun.objects.create(url=botcheck.url, startdate=botcheck.startdate, enddate=botcheck.enddate, seats=botcheck.seats, timewanted=botcheck.timewanted, hoursba=botcheck.hoursba, nonstop=botcheck.nonstop, reservation_name=botcheck.reservation.name, retrysec=botcheck.retrysec, minidle=botcheck.minidle, maxidle=botcheck.maxidle, account_email=botcheck.account.email, account_password=botcheck.account.password, account_api_key=botcheck.account.api_key, account_token=botcheck.account.token, account_payment_method_id=botcheck.account.payment_method_id, multiproxy_name=botcheck.multiproxy.name, multiproxy_value=botcheck.multiproxy.value, task=1, sendmessage=botcheck.sendmessage, username=request.user.username)
     # fname = open(f"logs/checkbookrun_web_{ret.id}.log", "w")
     # commandlist = [PYLOC, "botmodules/resybotcheckbooking.py", "-id", '{}'.format(ret.id) ]
     # process = Popen(commandlist, stdout=fname)
@@ -611,6 +603,7 @@ def run_botcheck(request, pk):
             })
         })
 
+@login_required(login_url="login")
 def show_botcheckruns(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -618,6 +611,7 @@ def show_botcheckruns(request):
     }
     return render(request=request, template_name='botui/show_botcheckruns.html', context=context)
 
+@login_required(login_url="login")
 def botcheckrun_list(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -642,6 +636,7 @@ def botcheckrun_list(request):
         'botcheckruns': botcheckruns,
     })
 
+@login_required(login_url="login")
 def remove_botcheckrun(request, pk):
     botcheckrun = get_object_or_404(BotCheckRun, pk=pk)
     botcheckrun.task = 3
@@ -671,6 +666,7 @@ def remove_botcheckrun(request, pk):
             })
         })
 
+@login_required(login_url="login")
 def view_checkbookrun_log(request, pk):
     botrun = get_object_or_404(BotCheckRun, pk=pk)
     strlog = ""
@@ -691,6 +687,7 @@ def view_checkbookrun_log(request, pk):
         "strlog": strlog
     })
 
+@login_required(login_url="login")
 def stop_botcheckrun(request, pk):
     # breakpoint()
     botcheckrun = get_object_or_404(BotCheckRun, pk=pk)

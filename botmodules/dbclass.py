@@ -21,7 +21,7 @@ class Multiproxy(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
     value: Mapped[str] = mapped_column(Text)
-
+    value2: Mapped[str] = mapped_column(Text)
 
 class Account(Base):
     __tablename__ =  TABLE_PREFIX + "account"
@@ -79,3 +79,4 @@ class BotCheckRun(Base):
     account_payment_method_id: Mapped[int] = mapped_column(Integer)
     pid: Mapped[int] = mapped_column(Integer)
     task: Mapped[int] = mapped_column(SmallInteger)
+    username: Mapped[str] = mapped_column(String(255))

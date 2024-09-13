@@ -12,11 +12,16 @@
       <div class="invalid-feedback">{{ form.name.errors|first }}</div>
     </div>
     <div class="mb-3">
-        <label for="{{ form.value.id_for_label }}" class="form-label">Value</label>
-        {% render_field form.value class="form-control" placeholder="" %}
+        <label for="{{ form.value.id_for_label }}" class="form-label">Proxy 1</label>
+        {% render_field form.value class="form-control" placeholder="" rows="5" %}
         <div class="invalid-feedback">{{ form.value.errors|first }}</div>
-      </div>
-    
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.value2.id_for_label }}" class="form-label">Proxy 2</label>
+      {% render_field form.value2 class="form-control" placeholder="" rows="5" %}
+      <div class="invalid-feedback">{{ form.value2.errors|first }}</div>
+  </div>
+  
 </div>
   <div class="modal-footer">
     {% if multiproxy %}

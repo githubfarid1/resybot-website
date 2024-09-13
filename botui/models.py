@@ -123,6 +123,7 @@ class Multiproxy(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
     value = models.TextField(null=True, blank=True)
+    value2 = models.TextField(null=True, blank=True)
     def __str__(self) -> str:
         return self.name
 
@@ -205,6 +206,7 @@ class BotCheckRun(models.Model):
     account_payment_method_id = models.IntegerField(null=True, blank=True)
     pid = models.IntegerField(null=True, blank=True, default=0)
     task = models.IntegerField(default=0)
+    username = models.CharField(max_length=255, null=True, blank=True)
     '''
     1=run
     2=stop
