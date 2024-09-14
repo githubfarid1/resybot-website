@@ -152,6 +152,7 @@ class BotCheck(models.Model):
         validators=[MinValueValidator(0.01), MaxValueValidator(9.99)]
     )
     sendmessage = models.BooleanField(default=False)
+    mentionto = models.CharField(max_length=1000, null=True, blank=True)
     account = models.ForeignKey(
         Account,
         db_column='account_id',
@@ -196,6 +197,7 @@ class BotCheckRun(models.Model):
         validators=[MinValueValidator(0.01), MaxValueValidator(9.99)]
     )
     sendmessage = models.BooleanField(default=False)
+    mentionto = models.CharField(max_length=1000, null=True, blank=True)
     multiproxy_name = models.CharField(max_length=255, null=True, blank=True)
     multiproxy_value = models.CharField(max_length=255, null=True, blank=True)
     reservation_name = models.CharField(max_length=255, null=True, blank=True)

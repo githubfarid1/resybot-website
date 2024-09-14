@@ -84,6 +84,11 @@
                     {% render_field form.sendmessage class="form-control" placeholder="" %}
                     <div class="invalid-feedback">{{ form.sendmessage.errors|first }}</div>
                   </div>
+                  <div class="mb-2">
+                    <label for="{{ form.mentionto.id_for_label }}" class="form-label">Mention To</label>
+                    {% render_field form.mentionto class="form-control" placeholder="" %}
+                    <div class="invalid-feedback">{{ form.mentionto.errors|first }}</div>
+                  </div>
             </div>
         </div>
     </div>        

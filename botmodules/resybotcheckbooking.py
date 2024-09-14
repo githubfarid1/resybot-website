@@ -74,7 +74,7 @@ def send_to_telegram(message):
     except Exception as e:
         print(e)
 
-def parse_to_html(slot, url, seats, venue_id, username):
+def parse_to_html(slot, url, seats, venue_id, mentionto):
     restaurant_name = str(url).split("/")[-1]
     tokensplit = slot.config.token.split("/")
     mdict = {"venueName":restaurant_name,"featureRecaptcha":False,"badge":None,"colors":{"background":None,"font":None},"isGda":False,"serviceTypeId":2,"templateId":tokensplit[4],"time":f"{tokensplit[6]} {tokensplit[8]}","token":slot.config.token,"type":slot.config.type,"hasAddOns":False,"hasMenus":False,"serviceTypeName":"","serviceTypeKey":""}
@@ -87,6 +87,7 @@ def parse_to_html(slot, url, seats, venue_id, username):
     html += f"Date: <strong>{tokensplit[6]}</strong>\n"
     html += f"Time: <strong>{tokensplit[8][0:-3]}</strong>\n"
     html += f"Seats: <strong>{seats}</strong>\n"
+    html += f"Mentions: <strong>{mentionto}</strong>\n"
     html += f'<a href="{link}">Booking</a>'
     return html
 
@@ -167,7 +168,8 @@ def main():
     account_api_key = data.account_api_key
     account_payment_method_id = data.account_payment_method_id
     sendmessage = data.sendmessage
-    username = data.username
+    mentionto = data.mentionto
+
     if reservation_name == '<Not Set>':
         reservation_name = None
 
@@ -262,7 +264,7 @@ def main():
                         for slot in slots:
                             dtime = str(slot.config.token).split("/")[-3][:5]
                             reservation = str(slot.config.token).split("/")[-1]
-                            html = parse_to_html(slot=slot, url=url, seats=seats, venue_id=venue_id, username=username)
+                            html = parse_to_html(slot=slot, url=url, seats=seats, venue_id=venue_id, mentionto=mentionto)
                             myTable.add_row([dtime, reservation])
                             htmllist.append(html)
 

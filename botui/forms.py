@@ -72,4 +72,4 @@ class BotCheckForm(forms.ModelForm):
     multiproxy = forms.ModelChoiceField(queryset=Multiproxy.objects.all(), initial="<Not Set>")
     class Meta:
         model = BotCheck
-        fields = ['url',  'startdate',  'enddate', 'timewanted',  'hoursba',  'seats',  'reservation',  'nonstop', 'retrysec',  'minidle',  'maxidle',  'account',  'multiproxy', 'sendmessage']
+        fields = ['url',  'startdate',  'enddate', 'timewanted',  'hoursba',  'seats',  'reservation',  'nonstop', 'retrysec',  'minidle',  'maxidle',  'account',  'multiproxy', 'sendmessage', 'mentionto']
