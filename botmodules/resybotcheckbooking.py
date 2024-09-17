@@ -311,7 +311,10 @@ def main():
                 except (Get500Error, SSLError, ConnectionError) as e:
                     # proxies[proxyidx]['status'] = False
                     proxyidx += 1
-                    print("Proxy Error or proxy use count limit, go to next proxy")
+                    print("Proxy Error, go to next proxy")
+                    continue
+                except (ExhaustedRetriesError, NoSlotsError) as e:
+                    print(str(e))
                     continue
                 except Exception as e:
                     print("Bot Error:", str(e))
