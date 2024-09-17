@@ -69,7 +69,7 @@ class BotCheckForm(forms.ModelForm):
     sendmessage = forms.ChoiceField(choices = TRUE_FALSE_CHOICES,  initial=False, widget=forms.Select(), required=True)
     reservation = forms.ModelChoiceField(queryset=ReservationType.objects.all(), initial="<Not Set>")
     account = forms.ModelChoiceField(queryset=Account.objects.all(), initial="<Not Set>")
-    multiproxy = forms.ModelChoiceField(queryset=Multiproxy.objects.all(), initial="<Not Set>")
+    multiproxy = forms.ModelChoiceField(queryset=Multiproxy.objects.all(), initial=1)
     minproxy = forms.IntegerField(required=True, initial=10)   
     maxproxy = forms.IntegerField(required=True, initial=50)   
 
