@@ -22,7 +22,7 @@ from resy_bot.selectors import AbstractSelector, SimpleSelector
 import time
 
 logger = logging.getLogger(__name__)
-logger.setLevel("INFO")
+logger.setLevel("ERROR")
 
 
 class ResyManager:
@@ -92,9 +92,13 @@ class ResyManager:
                 if len(slots) == 0:
                     raise NoSlotsError("No Slots Found")
                 else:
-                    logger.info(len(slots))
-                    # logger.info(slots)
-                    return slots
+                    
+                    selected_slots = self.selector.select2(slots, reservation_request)
+                    if len(selected_slots) == 0:
+                        raise NoSlotsError("No Slots Found")
+                    else:
+                        logger.info(len(slots))
+                        return selected_slots
             except NoSlotsError:
                 logger.info(
                     f"no slots, retrying; currently {datetime.now().isoformat()}"

@@ -1,6 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import ReservationType, Proxy, Account, BotCommand, Multiproxy, BotCheck
+from .models import ReservationType, Proxy, Account, BotCommand, Multiproxy, BotCheck, Setting
 from django.core.exceptions import NON_FIELD_ERRORS
 import re
 from datetime import datetime, date, time
@@ -70,6 +70,15 @@ class BotCheckForm(forms.ModelForm):
     reservation = forms.ModelChoiceField(queryset=ReservationType.objects.all(), initial="<Not Set>")
     account = forms.ModelChoiceField(queryset=Account.objects.all(), initial="<Not Set>")
     multiproxy = forms.ModelChoiceField(queryset=Multiproxy.objects.all(), initial="<Not Set>")
+    minproxy = forms.IntegerField(required=True, initial=10)   
+    maxproxy = forms.IntegerField(required=True, initial=50)   
+
     class Meta:
         model = BotCheck
-        fields = ['url',  'startdate',  'enddate', 'timewanted',  'hoursba',  'seats',  'reservation',  'nonstop', 'retrysec',  'minidle',  'maxidle',  'account',  'multiproxy', 'sendmessage', 'mentionto']
+        fields = ['url',  'startdate',  'enddate', 'timewanted',  'hoursba',  'seats',  'reservation',  'nonstop', 'retrysec',  'minidle',  'maxidle',  'account',  'multiproxy', 'sendmessage', 'mentionto', 'minproxy', 'maxproxy']
+
+
+class SettingForm(forms.ModelForm):
+    class Meta:
+        model = Setting
+        fields = ['name', 'key', 'value']

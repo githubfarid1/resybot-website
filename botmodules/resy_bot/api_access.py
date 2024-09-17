@@ -1,5 +1,6 @@
 from datetime import datetime
 from requests import Session, HTTPError
+from requests.exceptions import ProxyError
 from typing import Dict, List
 from resy_bot.constants import RESY_BASE_URL, ResyEndpoints
 from resy_bot.logging import logging
@@ -27,7 +28,7 @@ from resy_bot.errors import Get500Error
 # from settings import PROXIES
 
 logger = logging.getLogger(__name__)
-logger.setLevel("INFO")
+logger.setLevel("ERROR")
 
 
 def build_session(config: ResyConfig) -> Session:
@@ -108,8 +109,15 @@ class ResyApiAccess:
         logger.info(
             f"{datetime.now().isoformat()} Sending request to find booking slots"
         )
+        # breakpoint()
+        #frd
+        try:
+            print(self.session.proxies.get('http'))
+            resp = self.session.get(find_url, params=params.dict())
+        except ProxyError as e:
+            raise Get500Error(f"Error, Public IP Blocked {self.session.proxies.get('http')}")
 
-        resp = self.session.get(find_url, params=params.dict())
+        # resp = self.session.get(find_url, params=params.dict())
         logger.info(f"{datetime.now().isoformat()} Received response for ")
 
         if not resp.ok:

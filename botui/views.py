@@ -1,9 +1,9 @@
 from django.shortcuts import render
 import os
 from django.shortcuts import render, get_object_or_404, redirect, get_list_or_404
-from .models import ReservationType, Account, BotCommand, Proxy, BotRun, Multiproxy, BotCheck, BotCheckRun
+from .models import ReservationType, Account, BotCommand, Proxy, BotRun, Multiproxy, BotCheck, BotCheckRun, Setting
 import json
-from .forms import ReservationForm, ProxyForm, AccountForm, BotCommandForm, MultiproxyForm, BotCheckForm
+from .forms import ReservationForm, ProxyForm, AccountForm, BotCommandForm, MultiproxyForm, BotCheckForm, SettingForm
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_POST
 from sys import platform
@@ -587,7 +587,7 @@ def remove_botcheck(request, pk):
 @login_required(login_url="login")
 def run_botcheck(request, pk):
     botcheck = get_object_or_404(BotCheck, pk=pk)
-    ret = BotCheckRun.objects.create(url=botcheck.url, startdate=botcheck.startdate, enddate=botcheck.enddate, seats=botcheck.seats, timewanted=botcheck.timewanted, hoursba=botcheck.hoursba, nonstop=botcheck.nonstop, reservation_name=botcheck.reservation.name, retrysec=botcheck.retrysec, minidle=botcheck.minidle, maxidle=botcheck.maxidle, account_email=botcheck.account.email, account_password=botcheck.account.password, account_api_key=botcheck.account.api_key, account_token=botcheck.account.token, account_payment_method_id=botcheck.account.payment_method_id, multiproxy_name=botcheck.multiproxy.name, multiproxy_value=botcheck.multiproxy.value, task=1, sendmessage=botcheck.sendmessage, username=request.user.username, mentionto=botcheck.mentionto)
+    ret = BotCheckRun.objects.create(url=botcheck.url, startdate=botcheck.startdate, enddate=botcheck.enddate, seats=botcheck.seats, timewanted=botcheck.timewanted, hoursba=botcheck.hoursba, nonstop=botcheck.nonstop, reservation_name=botcheck.reservation.name, retrysec=botcheck.retrysec, minidle=botcheck.minidle, maxidle=botcheck.maxidle, account_email=botcheck.account.email, account_password=botcheck.account.password, account_api_key=botcheck.account.api_key, account_token=botcheck.account.token, account_payment_method_id=botcheck.account.payment_method_id, multiproxy_name=botcheck.multiproxy.name, multiproxy_value=botcheck.multiproxy.value, task=1, sendmessage=botcheck.sendmessage, username=request.user.username, mentionto=botcheck.mentionto, minproxy=botcheck.minproxy, maxproxy=botcheck.maxproxy)
     # fname = open(f"logs/checkbookrun_web_{ret.id}.log", "w")
     # commandlist = [PYLOC, "botmodules/resybotcheckbooking.py", "-id", '{}'.format(ret.id) ]
     # process = Popen(commandlist, stdout=fname)
@@ -688,6 +688,19 @@ def view_checkbookrun_log(request, pk):
     })
 
 @login_required(login_url="login")
+def download_checkbookrun_log(request, pk):
+    # botrun = get_object_or_404(BotCheckRun, pk=pk)
+    filename = f"checkbookrun_web_{pk}.log"
+    read_file = open(f"logs/{filename}", "r")
+    response = HttpResponse(read_file.read(), content_type="text/plain,charset=utf8")
+    read_file.close()
+       
+    response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+    return response
+
+
+
+@login_required(login_url="login")
 def stop_botcheckrun(request, pk):
     # breakpoint()
     botcheckrun = get_object_or_404(BotCheckRun, pk=pk)
@@ -707,3 +720,41 @@ def stop_botcheckrun(request, pk):
                 "showMessage": f"{botcheckrun.url} stopped."
             })
         })
+
+@login_required(login_url="login")
+def show_settings(request):
+    context = {
+    }
+    return render(request=request, template_name='botui/show_settings.html', context=context)
+
+@login_required(login_url="login")
+def setting_list(request):
+    settings = Setting.objects.all()
+    return render(request, 'botui/setting_list.html', {
+        'data': settings,
+    })
+
+@login_required(login_url="login")
+def edit_setting(request, pk):
+    setting = get_object_or_404(Setting, pk=pk)
+    # return HttpResponse(year.id)
+    if request.method == "POST":
+        form = SettingForm(request.POST, instance=setting)
+        if form.is_valid():
+            form.save()
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({
+                        "proxyListChanged": None,
+                        "showMessage": f"{setting.name} updated."
+                    })
+                }
+            )
+    else:
+        form = SettingForm(instance=setting)
+    return render(request, 'botui/setting_form.html', {
+        'form': form,
+        'setting': setting,
+        'module': 'Edit Data'
+    })

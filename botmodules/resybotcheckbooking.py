@@ -10,7 +10,8 @@ from user_agent import generate_user_agent
 from datetime import datetime, date, timedelta
 import random
 import time
-from requests import Session, HTTPError
+from requests.exceptions import SSLError
+from requests import Session, HTTPError, ConnectionError
 from resy_bot.errors import NoSlotsError, ExhaustedRetriesError, Get500Error
 from datetime import datetime, timedelta
 from prettytable import PrettyTable
@@ -22,7 +23,7 @@ from dotenv import load_dotenv
 from telegram_text import PlainText, Bold, Italic, Underline
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from dbclass import Account, Multiproxy, ReservationType, BotCheck, BotCheckRun
+from dbclass import BotCheckRun, Setting
 from urllib.parse import quote, unquote, quote_plus, unquote_plus
 
 load_dotenv()
@@ -63,11 +64,11 @@ def intercept_request(request):
     return request
 
 def send_to_telegram(message):
-
-    apiToken = os.getenv('TELEGRAM_TOKEN')
-    chatID = os.getenv('TELEGRAM_CHAT_ID')
+    # apiToken = os.getenv('TELEGRAM_TOKEN')
+    # chatID = os.getenv('TELEGRAM_CHAT_ID')
+    apiToken = session.query(Setting).filter(Setting.key=='TELEGRAM_TOKEN').one().value
+    chatID = session.query(Setting).filter(Setting.key=='TELEGRAM_CHAT_ID').one().value
     apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
-
     try:
         response = requests.post(apiURL, json={'chat_id': chatID, 'text': message, "parse_mode": "HTML"})
         # print(response.text)
@@ -138,6 +139,12 @@ def daterange(start_date: date, end_date: date):
     for n in range(days+1):
         yield start_date + timedelta(n)
 
+def check_static_proxy(proxies):
+    for proxy in proxies:
+        if proxy['status']:
+            return True
+    return False
+
 def main():
     parser = argparse.ArgumentParser(description="Resy Bot Check")
 
@@ -146,7 +153,6 @@ def main():
 
     args = parser.parse_args()
     # data = db.getCheckBookingRun(id=args.id)
-     
     data = session.query(BotCheckRun).filter(BotCheckRun.id==args.id).one()
     id = data.id
     url = data.url
@@ -161,6 +167,7 @@ def main():
     retsecs = data.retrysec
     proxy_name = data.multiproxy_name
     proxy_value = data.multiproxy_value
+    proxy_value2 = data.multiproxy_value2
     reservation_name = data.reservation_name
     account_email = data.account_email
     account_password = data.account_password
@@ -169,6 +176,8 @@ def main():
     account_payment_method_id = data.account_payment_method_id
     sendmessage = data.sendmessage
     mentionto = data.mentionto
+    minproxy = data.minproxy
+    maxproxy = data.maxproxy
 
     if reservation_name == '<Not Set>':
         reservation_name = None
@@ -187,78 +196,97 @@ def main():
     http_proxy = ''
     proxies = []
     if  proxy_name != '<Not Set>':
-        proxies = proxy_value.split("\n")
-        http_proxy = proxies[0]
-        https_proxy = proxies[0]
-    
+        for proxy in proxy_value.split("\n"):
+            # urlprox = proxy.split("//")[-1]
+            # proxies.append({'proxy': f"sock5://{urlprox}", 'status': True})
+            urlprox = proxy.split("//")[-1]
+            proxies.append({'proxy': f"http://{urlprox}", 'status': True})
+            # proxies.append({'proxy': proxy, 'status': True})
+
+        http_proxy = proxies[0]['proxy']
+        https_proxy = proxies[0]['proxy']
+        print(http_proxy)
     resy_config = {"api_key": api_key, "token": '', "payment_method_id": 999999, "email":'', "password":'', "http_proxy": http_proxy, "https_proxy": https_proxy, "retry_count": 1, "seconds_retry": float(retsecs)}
-
-    venue_id = get_venue_id(resy_config=resy_config, urladdress=url)
-
+    # venue_id = get_venue_id(resy_config=resy_config, urladdress=url)
+    venue_id = '64869'
     if account_email != "<Not Set>":
         resy_config_booking = {"api_key": account_api_key, "token": account_token, "payment_method_id": account_payment_method_id, "email":account_email, "password":account_password, "http_proxy": http_proxy, "https_proxy": https_proxy, "retry_count": 3, "seconds_retry": float(retsecs)}
     
     strdateyesterday = datetime.strftime(datetime.now()-timedelta(days=1), '%Y-%m-%d')
     flog = open(f"{os.getenv('BASE_FOLDER')}logs/checkbookrun_terminal_{id}.log", "w")
-    stoptime = datetime.now() + timedelta(minutes = 5)
-    proxyidx = 1
-    try:
-        while True:
-            if len(proxies) > 1:
-                if datetime.now() >= stoptime:
-                    stoptime = datetime.now() + timedelta(minutes = 5)
-                    resy_config['http_proxy'] = proxies[proxyidx]
-                    resy_config['https_proxy'] = proxies[proxyidx]
-                    tmpstr = f"IP Proxy updated: {resy_config['http_proxy']}"
-                    print(tmpstr)
-                    flog.write(tmpstr + "\n")
-                    proxyidx += 1
-                    if proxyidx == len(proxies):
-                        proxyidx = 0
+    
 
-            myTable = PrettyTable(["KEY","VALUE"])
-            myTable.align ="l"
-            myTable.add_row(["Restaurant URL", url])
-            myTable.add_row(["Range Date", f"{startdate} - {enddate}"])
-            myTable.add_row(["Seats Wanted", seats])
-            print(myTable)
-            flog.write(str(myTable))
-            print("")
-            flog.write("\n")
-            for single_date in daterange(start_date, end_date):
-                searchdate = single_date.strftime("%Y-%m-%d")
-                tmpstr = f"Date Searching: {searchdate}"
-                print(tmpstr)
-                flog.write(tmpstr + "\n")
-                reservation_config = {
-                "reservation_request": {
-                "party_size": int(seats),
-                "venue_id": venue_id,
-                "window_hours": int(hoursba),
-                "prefer_early": False,
-                "ideal_date": searchdate,
-                #   "days_in_advance": 14,
-                "ideal_hour": int(timewanted.strftime("%H:%M:%S").split(":")[0]),
-                "ideal_minute": int(timewanted.strftime("%H:%M:%S").split(":")[1]),
-                "preferred_type": reservation_name,
-                },
-                "expected_drop_hour": 9,
-                "expected_drop_minute": 0, 
-                "expected_drop_second": 0, 
-                "expected_drop_year":strdateyesterday.split("-")[0],
-                "expected_drop_month":strdateyesterday.split("-")[1],
-                "expected_drop_day":strdateyesterday.split("-")[2],
-                }
+    # stoptime = datetime.now() + timedelta(minutes = random_delay(minproxy, maxproxy))
+    
+    reservation_config = {
+    "reservation_request": {
+    "party_size": int(seats),
+    "venue_id": venue_id,
+    "window_hours": int(hoursba),
+    "prefer_early": False,
+    "ideal_date": None,
+    #   "days_in_advance": 14,
+    "ideal_hour": int(timewanted.strftime("%H:%M:%S").split(":")[0]),
+    "ideal_minute": int(timewanted.strftime("%H:%M:%S").split(":")[1]),
+    "preferred_type": reservation_name,
+    },
+    "expected_drop_hour": 9,
+    "expected_drop_minute": 0, 
+    "expected_drop_second": 0, 
+    "expected_drop_year":strdateyesterday.split("-")[0],
+    "expected_drop_month":strdateyesterday.split("-")[1],
+    "expected_drop_day":strdateyesterday.split("-")[2],
+    }
+
+
+
+    def check_availability(resy_config, datewanted):
+        reservation_config["reservation_request"]["ideal_date"] = datewanted
+        # breakpoint()
+        slots = check_now(resy_config=resy_config, reservation_config=reservation_config)
+        return slots        
+    
+    
+    myTable = PrettyTable(["KEY","VALUE"])
+    myTable.align ="l"
+    myTable.add_row(["Restaurant URL", url])
+    myTable.add_row(["Range Date", f"{startdate} - {enddate}"])
+    myTable.add_row(["Time wanted", timewanted.strftime("%H:%M")])
+    myTable.add_row(["Hours before and After", hoursba])
+
+    myTable.add_row(["Seats Wanted", seats])
+    print(myTable)
+    flog.write(str(myTable))
+    print("")
+    flog.write("\n")
+    proxyidx = 0
+    excount = int(random_delay(minproxy, maxproxy))
+    usecount = 0
+    
+    while True:
+        for single_date in daterange(start_date, end_date):
+            searchdate = single_date.strftime("%Y-%m-%d")
+            while True:
                 try:
-                    myTable = PrettyTable(["TIME","RESER. TYPE"])
-                    myTable.align ="l"
+                    if len(proxies) > 1:
+                        # if not check_static_proxy(proxies):
+                        #     print("All proxies malfunction")
+                        #     sys.exit()
+                        if proxyidx > len(proxies)-1:
+                            proxyidx = 0
+                        if proxies[proxyidx]['status']:
+                            resy_config['http_proxy'] = proxies[proxyidx]['proxy']
+                            resy_config['https_proxy'] = proxies[proxyidx]['proxy']
+                        else:
+                            raise Get500Error
                     
-                    slots = check_now(resy_config=resy_config, reservation_config=reservation_config)
+                    myTable = PrettyTable(["KEY","VALUE"])
+                    myTable.align ="l"
+                    slots = check_availability(resy_config=resy_config, datewanted=searchdate)
                     if len(slots) != 0:
                         print(searchdate)
                         flog.write(searchdate + "\n")
                         tmpstr = f"Found {len(slots)} Slots"
-                        print(tmpstr)
                         flog.write(tmpstr + "\n")
                         htmllist = []
                         for slot in slots:
@@ -267,71 +295,199 @@ def main():
                             html = parse_to_html(slot=slot, url=url, seats=seats, venue_id=venue_id, mentionto=mentionto)
                             myTable.add_row([dtime, reservation])
                             htmllist.append(html)
-
                         print(myTable)
-                        flog.write(str(myTable))
                         if sendmessage == True:
-                            dsearch = single_date.strftime("%Y-%m-%d")
-                            urlstr = f"{url}?{dsearch}&seats={seats}" 
                             for html in htmllist:
-                                # breakpoint()
                                 send_to_telegram(html)
-                        if account_email != "<Not Set>":
-                            try:
-                                tmpstr = "Trying to Book.."
-                                print(tmpstr)
-                                flog.write(tmpstr + "\n")
-                                book_now(resy_config=resy_config_booking, reservation_config=reservation_config)
-                                print("Reservation Success..." + CLOSE_MESSAGE)
-                                sys.exit()
-                            except (ExhaustedRetriesError, NoSlotsError) as e:
-                                tmpstr = str(e)
-                                print(tmpstr)
-                                flog.write(tmpstr + "\n")
-                                continue
-                except (HTTPError, ExhaustedRetriesError, NoSlotsError) as e:
-                    tmpstr = str(e)
-                    print(tmpstr)
-                    flog.write(tmpstr + "\n")
-                except Get500Error as e:
-                    tmpstr = str(e)
-                    print(tmpstr)
-                    flog.write(tmpstr + "\n")
-                    if len(proxies) > 1:
-                        # go to next proxy
-                        stoptime = datetime.now() + timedelta(minutes = 5)
-                        resy_config['http_proxy'] = proxies[proxyidx]
-                        resy_config['https_proxy'] = proxies[proxyidx]
-                        tmpstr = f"IP Proxy updated: {resy_config['http_proxy']}"
-                        print(tmpstr)
-                        flog.write(tmpstr + "\n")
-                        proxyidx += 1
-                        if proxyidx == len(proxies):
-                            proxyidx = 0
 
+                    usecount += 1
+                    if usecount >= excount:
+                        usecount = 0
+                        print("Proxy use count reach limit", excount)
+                        excount = int(random_delay(minproxy, maxproxy))
+                        proxyidx += 1
+                        break
+                    break
+                except (Get500Error, SSLError, ConnectionError) as e:
+                    # proxies[proxyidx]['status'] = False
+                    proxyidx += 1
+                    print("Proxy Error or proxy use count limit, go to next proxy")
+                    continue
                 except Exception as e:
                     print("Bot Error:", str(e))
-                print(datetime.now())
-                flog.write("\n" + str(datetime.now()) +"\n")
-                print("")
-                flog.write("\n")
-            if nonstop == False:
-                break
-            else:
-                tmpstr = "____________________________Repeat________________________________"
-                print(tmpstr)
-                flog.write(tmpstr + "\n\n")
-                sleeptime = random_delay(int(minidle), int(maxidle))
-                print("Idle Time", int(sleeptime), "seconds")
-                time.sleep(sleeptime)
-        tmpstr = "Process Finished..."
-        flog.write(tmpstr+"\n")
-        flog.close()
-        print(tmpstr)
-    except:
-        flog.close()
+                    sys.exit()
+        if not nonstop:
+            break
+
+
+
+
+    # proxyidx = 1
+    # try:
+    #     while True:
+    #         if len(proxies) > 1:
+    #             if datetime.now() >= stoptime:
+    #                 stoptime = datetime.now() + timedelta(minutes = random_delay(minproxy, maxproxy))
+    #                 if not check_static_proxy(proxies):
+    #                     print("All proxies error")
+    #                     sys.exit()
+    #                 while True:
+    #                     if proxies[proxyidx]['status']:
+    #                         resy_config['http_proxy'] = proxies[proxyidx]['proxy']
+    #                         resy_config['https_proxy'] = proxies[proxyidx]['proxy']
+    #                         # proxyidx += 1
+    #                         break
+    #                     else:
+    #                         proxyidx += 1
+    #                     if proxyidx == len(proxies):
+    #                         proxyidx = 0
+
+    #                 tmpstr = f"IP Proxy updated: {resy_config['http_proxy']}"
+    #                 print(tmpstr)
+    #                 flog.write(tmpstr + "\n")
+
+    #                 # proxyidx += 1
+    #                 # if proxyidx == len(proxies):
+    #                 #     proxyidx = 0
+
+    #         myTable = PrettyTable(["KEY","VALUE"])
+    #         myTable.align ="l"
+    #         myTable.add_row(["Restaurant URL", url])
+    #         myTable.add_row(["Range Date", f"{startdate} - {enddate}"])
+    #         myTable.add_row(["Seats Wanted", seats])
+    #         print(myTable)
+    #         flog.write(str(myTable))
+    #         print("")
+    #         flog.write("\n")
+    #         for single_date in daterange(start_date, end_date):
+    #             searchdate = single_date.strftime("%Y-%m-%d")
+    #             tmpstr = f"Date Searching: {searchdate}"
+    #             print(tmpstr)
+    #             flog.write(tmpstr + "\n")
+    #             reservation_config = {
+    #             "reservation_request": {
+    #             "party_size": int(seats),
+    #             "venue_id": venue_id,
+    #             "window_hours": int(hoursba),
+    #             "prefer_early": False,
+    #             "ideal_date": searchdate,
+    #             #   "days_in_advance": 14,
+    #             "ideal_hour": int(timewanted.strftime("%H:%M:%S").split(":")[0]),
+    #             "ideal_minute": int(timewanted.strftime("%H:%M:%S").split(":")[1]),
+    #             "preferred_type": reservation_name,
+    #             },
+    #             "expected_drop_hour": 9,
+    #             "expected_drop_minute": 0, 
+    #             "expected_drop_second": 0, 
+    #             "expected_drop_year":strdateyesterday.split("-")[0],
+    #             "expected_drop_month":strdateyesterday.split("-")[1],
+    #             "expected_drop_day":strdateyesterday.split("-")[2],
+    #             }
+    #             try:
+    #                 myTable = PrettyTable(["TIME","RESER. TYPE"])
+    #                 myTable.align ="l"
+                    
+    #                 slots = check_now(resy_config=resy_config, reservation_config=reservation_config)
+    #                 if len(slots) != 0:
+    #                     print(searchdate)
+    #                     flog.write(searchdate + "\n")
+    #                     tmpstr = f"Found {len(slots)} Slots"
+    #                     print(tmpstr)
+    #                     flog.write(tmpstr + "\n")
+    #                     htmllist = []
+    #                     for slot in slots:
+    #                         dtime = str(slot.config.token).split("/")[-3][:5]
+    #                         reservation = str(slot.config.token).split("/")[-1]
+    #                         html = parse_to_html(slot=slot, url=url, seats=seats, venue_id=venue_id, mentionto=mentionto)
+    #                         myTable.add_row([dtime, reservation])
+    #                         htmllist.append(html)
+
+    #                     print(myTable)
+    #                     flog.write(str(myTable))
+    #                     if sendmessage == True:
+    #                         dsearch = single_date.strftime("%Y-%m-%d")
+    #                         urlstr = f"{url}?{dsearch}&seats={seats}" 
+    #                         for html in htmllist:
+    #                             # breakpoint()
+    #                             send_to_telegram(html)
+    #                     if account_email != "<Not Set>":
+    #                         try:
+    #                             tmpstr = "Trying to Book.."
+    #                             print(tmpstr)
+    #                             flog.write(tmpstr + "\n")
+    #                             book_now(resy_config=resy_config_booking, reservation_config=reservation_config)
+    #                             print("Reservation Success..." + CLOSE_MESSAGE)
+    #                             sys.exit()
+    #                         except (ExhaustedRetriesError, NoSlotsError) as e:
+    #                             tmpstr = str(e)
+    #                             print(tmpstr)
+    #                             flog.write(tmpstr + "\n")
+    #                             continue
+    #             except (HTTPError, ExhaustedRetriesError, NoSlotsError) as e:
+    #                 tmpstr = str(e)
+    #                 print(tmpstr)
+    #                 flog.write(tmpstr + "\n")
+    #             except Get500Error as e:
+    #                 # input("tes")
+    #                 tmpstr = str(e)
+    #                 print(tmpstr)
+    #                 flog.write(tmpstr + "\n")
+    #                 if len(proxies) > 1:
+    #                     # go to next proxy
+    #                     stoptime = datetime.now() + timedelta(minutes = random_delay(minproxy, maxproxy))
+
+    #                     proxies[proxyidx]['status'] = False
+    #                     if not check_static_proxy(proxies):
+    #                         print("All proxies error")
+    #                         sys.exit()
+    #                     while True:
+    #                         if proxies[proxyidx]['status']:
+    #                             resy_config['http_proxy'] = proxies[proxyidx]['proxy']
+    #                             resy_config['https_proxy'] = proxies[proxyidx]['proxy']
+    #                             # proxyidx += 1
+    #                             break
+    #                         else:
+    #                             proxyidx += 1
+    #                         if proxyidx == len(proxies):
+    #                             proxyidx = 0
+
+    #                     tmpstr = f"IP Proxy updated: {resy_config['http_proxy']}"
+    #                     print(tmpstr)
+    #                     flog.write(tmpstr + "\n")
+
+
+    #                     # resy_config['http_proxy'] = proxies[proxyidx]
+    #                     # resy_config['https_proxy'] = proxies[proxyidx]
+    #                     # tmpstr = f"IP Proxy updated: {resy_config['http_proxy']}"
+    #                     # print(tmpstr)
+    #                     # flog.write(tmpstr + "\n")
+    #                     # proxyidx += 1
+    #                     # if proxyidx == len(proxies):
+    #                     #     proxyidx = 0
+
+    #             except Exception as e:
+    #                 print("Bot Error:", str(e))
+    #             print(datetime.now())
+    #             flog.write("\n" + str(datetime.now()) +"\n")
+    #             print("")
+    #             flog.write("\n")
+    #         if nonstop == False:
+    #             break
+    #         else:
+    #             tmpstr = "____________________________Repeat________________________________"
+    #             print(tmpstr)
+    #             flog.write(tmpstr + "\n\n")
+    #             sleeptime = random_delay(int(minidle), int(maxidle))
+    #             print("Idle Time", int(sleeptime), "seconds")
+    #             time.sleep(sleeptime)
+    #     tmpstr = "Process Finished..."
+    #     flog.write(tmpstr+"\n")
+    #     flog.close()
+    #     print(tmpstr)
+    # except:
+    #     flog.close()
     
-    sys.exit()
+    # sys.exit()
 
 if __name__ == "__main__":
     main()

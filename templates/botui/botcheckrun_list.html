@@ -19,8 +19,10 @@
                 Reservation Type: <strong>{{ d.reservation_name }}</strong><br/>
                 Non Stop Running: <strong>{{ d.nonstop }}</strong><br/>
                 Seconds Between Retries: <strong>{{ d.retrysec }}</strong><br/>
-                Min Idle Time: <strong>{{ d.minidle }}</strong><br/>
-                Max Idle Time: <strong>{{ d.maxidle }}</strong><br/>
+                Min Idle Time (Sec.): <strong>{{ d.minidle }}</strong><br/>
+                Max Idle Time (Sec.): <strong>{{ d.maxidle }}</strong><br/>
+                Min Between Proxy (min.): <strong>{{ d.minproxy }}</strong><br/>
+                Max Between Proxy (min.): <strong>{{ d.maxproxy }}</strong><br/>
                 Send Message: <strong>{{ d.sendmessage }}</strong><br/>
                 Mentions to: <strong>{{ d.mentionto }}</strong><br/>
                 Account: <strong>{{ d.account_email }}</strong><br/>
@@ -34,17 +36,22 @@
             </div>
           </div>
             <div class="row">
-              <div class="col-lg-4">
+              <div class="col-lg-3 px-1">
                 <form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><button class="w-100 btn btn-sm btn-warning" hx-delete="{% url 'botui_remove_botcheckrun' pk=d.id %}" hx-confirm="Remove Bot Running?">Delete</button></form>
 
               </div>
-              <div class="col-lg-4">
+              <div class="col-lg-3 px-1">
                 <form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><button class="w-100 btn btn-sm btn-primary" hx-get="{% url 'botui_stop_botcheckrun' pk=d.id %}" hx-confirm="Stop Bot Running?">Stop</button></form>
               </div>
-              <div class="col-lg-4">
+              <div class="col-lg-3 px-0">
                 <button type="button" class="btn btn-sm btn-secondary"  hx-get="{% url 'botui_view_checkbookrun_log' pk=d.id %}" hx-target="#dialog">Show Log</button>
 
               </div>
+              <div class="col-lg-3 px-0">
+                <a href="{% url 'botui_download_checkbookrun_log' pk=d.id %}" target="_new"><button type="button" class="btn btn-sm btn-secondary">Dwn. Log</button></a>
+
+              </div>
+
             </div>
         </div>
       </div>

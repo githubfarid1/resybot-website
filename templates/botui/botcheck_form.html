@@ -47,25 +47,25 @@
                     {% render_field form.reservation class="form-control" placeholder="" %}
                     <div class="invalid-feedback">{{ form.reservation.errors|first }}</div>
                 </div>
-            </div>
+                <div class="mb-2">
+                  <label for="{{ form.nonstop.id_for_label }}" class="form-label">Non Stop Checking</label>
+                  {% render_field form.nonstop class="form-control" placeholder="" %}
+                  <div class="invalid-feedback">{{ form.nonstop.errors|first }}</div>
+                </div>
+                <div class="mb-2">
+                  <label for="{{ form.retrysec.id_for_label }}" class="form-label">Seconds before Retries</label>
+                  {% render_field form.retrysec class="form-control" placeholder="" %}
+                  <div class="invalid-feedback">{{ form.retrysec.errors|first }}</div>
+                </div>
+          </div>
             <div class="col">
                   <div class="mb-2">
-                    <label for="{{ form.nonstop.id_for_label }}" class="form-label">Non Stop Checking</label>
-                    {% render_field form.nonstop class="form-control" placeholder="" %}
-                    <div class="invalid-feedback">{{ form.nonstop.errors|first }}</div>
-                  </div>
-                  <div class="mb-2">
-                    <label for="{{ form.retrysec.id_for_label }}" class="form-label">Seconds before Retries</label>
-                    {% render_field form.retrysec class="form-control" placeholder="" %}
-                    <div class="invalid-feedback">{{ form.retrysec.errors|first }}</div>
-                  </div>
-                  <div class="mb-2">
-                    <label for="{{ form.minidle.id_for_label }}" class="form-label">Min. Idle Time</label>
+                    <label for="{{ form.minidle.id_for_label }}" class="form-label">Min. Idle Time (Seconds)</label>
                     {% render_field form.minidle class="form-control" placeholder="" %}
                     <div class="invalid-feedback">{{ form.minidle.errors|first }}</div>
                   </div>
                   <div class="mb-2">
-                    <label for="{{ form.maxidle.id_for_label }}" class="form-label">Max. Idle Time</label>
+                    <label for="{{ form.maxidle.id_for_label }}" class="form-label">Max. Idle Time (Seconds)</label>
                     {% render_field form.maxidle class="form-control" placeholder="" %}
                     <div class="invalid-feedback">{{ form.maxidle.errors|first }}</div>
                   </div>
@@ -88,6 +88,16 @@
                     <label for="{{ form.mentionto.id_for_label }}" class="form-label">Mention To</label>
                     {% render_field form.mentionto class="form-control" placeholder="" %}
                     <div class="invalid-feedback">{{ form.mentionto.errors|first }}</div>
+                  </div>
+                  <div class="mb-2">
+                    <label for="{{ form.minproxy.id_for_label }}" class="form-label">Min. Move between proxy</label>
+                    {% render_field form.minproxy class="form-control" placeholder="" %}
+                    <div class="invalid-feedback">{{ form.minproxy.errors|first }}</div>
+                  </div>
+                  <div class="mb-2">
+                    <label for="{{ form.maxproxy.id_for_label }}" class="form-label">Max. Move between proxy</label>
+                    {% render_field form.maxproxy class="form-control" placeholder="" %}
+                    <div class="invalid-feedback">{{ form.maxproxy.errors|first }}</div>
                   </div>
             </div>
         </div>

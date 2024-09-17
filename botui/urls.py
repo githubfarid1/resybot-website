@@ -41,7 +41,7 @@ urlpatterns = [
     path(route='multiproxy/<int:pk>/edit', view=views.edit_multiproxy, name=prefix + "edit_multiproxy"),
     path(route='multiproxy/<int:pk>/remove', view=views.remove_multiproxy, name=prefix + 'remove_multiproxy'),
 
-   path(route='botchecks', view=views.show_botchecks, name=prefix + "show_botchecks"),
+    path(route='botchecks', view=views.show_botchecks, name=prefix + "show_botchecks"),
     path(route='botcheck_list', view=views.botcheck_list, name=prefix + "botcheck_list"),
     path(route='add_botcheck', view=views.add_botcheck, name=prefix + "add_botcheck"),
     path(route='botcheck/<int:pk>/edit', view=views.edit_botcheck, name=prefix + "edit_botcheck"),
@@ -52,6 +52,11 @@ urlpatterns = [
     path(route='botcheckrun_list', view=views.botcheckrun_list, name=prefix + "botcheckrun_list"),
     path(route='botcheckrun/<int:pk>/remove', view=views.remove_botcheckrun, name=prefix + 'remove_botcheckrun'),
     path(route='botcheckrun/<int:pk>/view_checkbookrun_log', view=views.view_checkbookrun_log, name=prefix + 'view_checkbookrun_log'),
-   path(route='botcheckrun/<int:pk>/stop', view=views.stop_botcheckrun, name=prefix + 'stop_botcheckrun'),
+    path(route='botcheckrun/<int:pk>/stop', view=views.stop_botcheckrun, name=prefix + 'stop_botcheckrun'),
+    path(route='botcheckrun/<int:pk>/download_checkbookrun_log', view=views.download_checkbookrun_log, name=prefix + 'download_checkbookrun_log'),
  
+    path(route='settings', view=views.show_settings, name=prefix + "show_settings"),
+    path(route='setting_list', view=views.setting_list, name=prefix + "setting_list"),
+    path(route='setting/<int:pk>/edit', view=views.edit_setting, name=prefix + "edit_setting"),
+
 ]

@@ -16,8 +16,8 @@ import requests
 #   "https": "http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181"
 # }
 proxies = {
-  "http": "http://Rf3X-yq_IFA5qRcId7r60A@smartproxy.crawlbase.com:8012",
-  "https": "http://Rf3X-yq_IFA5qRcId7r60A@smartproxy.crawlbase.com:8012"
+  "http": "http://us-ca.proxymesh.com:31280",
+  "https": "http://us-ca.proxymesh.com:31280"
 }
 
 response = requests.get('https://quotes.toscrape.com/', proxies=proxies, verify=False)

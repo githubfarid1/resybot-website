@@ -48,6 +48,8 @@ class BotCheck(Base):
     retrysec: Mapped[float]  = mapped_column(Float)
     sendmessage: Mapped[bool] = mapped_column(Boolean)
     mentionto: Mapped[str] = mapped_column(String(1000))
+    minproxy: Mapped[int] = mapped_column(SmallInteger)
+    maxproxy: Mapped[int] = mapped_column(SmallInteger)
     account_id: Mapped[int] = mapped_column(ForeignKey(TABLE_PREFIX + "account.id"))
     account = relationship("Account")
     multiproxy_id: Mapped[int] = mapped_column(ForeignKey(TABLE_PREFIX + "multiproxy.id"))
@@ -71,8 +73,11 @@ class BotCheckRun(Base):
     retrysec: Mapped[float]  = mapped_column(Float)
     sendmessage: Mapped[bool] = mapped_column(Boolean)
     mentionto: Mapped[str] = mapped_column(String(1000))
+    minproxy: Mapped[int] = mapped_column(SmallInteger)
+    maxproxy: Mapped[int] = mapped_column(SmallInteger)
     multiproxy_name: Mapped[str] = mapped_column(String(255))
-    multiproxy_value: Mapped[str] = mapped_column(String(255))
+    multiproxy_value: Mapped[str] = mapped_column(Text)
+    multiproxy_value2: Mapped[str] = mapped_column(Text)
     reservation_name: Mapped[str] = mapped_column(String(255))
     account_email: Mapped[str] = mapped_column(String(255))
     account_password: Mapped[str] = mapped_column(String(255))
@@ -82,3 +87,10 @@ class BotCheckRun(Base):
     pid: Mapped[int] = mapped_column(Integer)
     task: Mapped[int] = mapped_column(SmallInteger)
     username: Mapped[str] = mapped_column(String(255))
+
+class Setting(Base):
+    __tablename__ =  TABLE_PREFIX + "setting"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255))
+    key: Mapped[str] = mapped_column(String(255))
+    value: Mapped[str] = mapped_column(String(255))

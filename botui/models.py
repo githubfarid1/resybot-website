@@ -127,7 +127,6 @@ class Multiproxy(models.Model):
     def __str__(self) -> str:
         return self.name
 
-
 class BotCheck(models.Model):
     id = models.AutoField(primary_key=True)
     url = models.URLField()
@@ -153,6 +152,13 @@ class BotCheck(models.Model):
     )
     sendmessage = models.BooleanField(default=False)
     mentionto = models.CharField(max_length=1000, null=True, blank=True)
+    minproxy = models.PositiveSmallIntegerField(default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(1000)]
+    )
+    maxproxy = models.PositiveSmallIntegerField(default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(1000)]
+    )
+
     account = models.ForeignKey(
         Account,
         db_column='account_id',
@@ -198,8 +204,15 @@ class BotCheckRun(models.Model):
     )
     sendmessage = models.BooleanField(default=False)
     mentionto = models.CharField(max_length=1000, null=True, blank=True)
+    minproxy = models.PositiveSmallIntegerField(default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(1000)]
+    )
+    maxproxy = models.PositiveSmallIntegerField(default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(1000)]
+    )
     multiproxy_name = models.CharField(max_length=255, null=True, blank=True)
-    multiproxy_value = models.CharField(max_length=255, null=True, blank=True)
+    multiproxy_value = models.TextField(null=True, blank=True)
+    multiproxy_value2 = models.TextField(null=True, blank=True)
     reservation_name = models.CharField(max_length=255, null=True, blank=True)
     account_email = models.CharField(max_length=255, null=True, blank=True)
     account_password = models.CharField(max_length=255, null=True, blank=True)
@@ -215,4 +228,12 @@ class BotCheckRun(models.Model):
     3=delete
     
     '''
-# Create your models here.
+class Setting(models.Model):
+    class Meta:
+        ordering = ["key"]
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)
+    key = models.CharField(max_length=255)
+    value = models.CharField(max_length=255, blank=True)
+    def __str__(self) -> str:
+        return self.name
