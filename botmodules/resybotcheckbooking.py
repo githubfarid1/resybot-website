@@ -207,8 +207,8 @@ def main():
         https_proxy = proxies[0]['proxy']
         print(http_proxy)
     resy_config = {"api_key": api_key, "token": '', "payment_method_id": 999999, "email":'', "password":'', "http_proxy": http_proxy, "https_proxy": https_proxy, "retry_count": 1, "seconds_retry": float(retsecs)}
-    # venue_id = get_venue_id(resy_config=resy_config, urladdress=url)
-    venue_id = '64869'
+    venue_id = get_venue_id(resy_config=resy_config, urladdress=url)
+    # venue_id = '64869'
     if account_email != "<Not Set>":
         resy_config_booking = {"api_key": account_api_key, "token": account_token, "payment_method_id": account_payment_method_id, "email":account_email, "password":account_password, "http_proxy": http_proxy, "https_proxy": https_proxy, "retry_count": 3, "seconds_retry": float(retsecs)}
     
