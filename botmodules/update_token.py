@@ -15,11 +15,16 @@ from user_agent import generate_user_agent
 import json
 import requests
 from resy_bot.logging import logging
-from database import Database
+# from database import Database
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from dbclass import BotCheckRun, Setting, Account
+from dotenv import load_dotenv
+
 logger = logging.getLogger(__name__)
 logger.setLevel("INFO")
 
-db = Database("db.sqlite3")
+# db = Database("db.sqlite3")
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
@@ -33,6 +38,12 @@ PROXY_PL={
   "password": "f2d43fe5-5bee-41ab-83f9-da70ae59c60a"
 }
 CLOSE_MESSAGE = "tes"
+load_dotenv()
+
+engine = create_engine('mysql+pymysql://{}:{}@localhost:{}/{}'.format(os.getenv('DB_USERNAME'), os.getenv('DB_PASS'), os.getenv('DB_PORT'), os.getenv('DB_NAME')) , echo=False)
+Session = sessionmaker(bind = engine)
+session = Session()
+
 def login_to_resy(page, email, password):
     """Login to Resy with enhanced stability and error handling."""
     try:
@@ -83,7 +94,7 @@ def intercept_request(request, profilename):
             if payment_method_id == None:
                 payment_method_id = 999999
 
-            db.updateAccount(email=profilename, token=token, api_key=api_key, payment_method_id=payment_method_id)
+            session.query(Account).filter(Account.email==profilename).update({"token":token, "api_key":api_key, "payment_method_id": payment_method_id})
             logger.info("token Updated Successfully.. ")
             sys.exit()
         except:
