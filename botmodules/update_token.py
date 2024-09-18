@@ -72,7 +72,9 @@ def intercept_request(request, profilename):
                 "User-Agent": generate_user_agent(),
                 'Cache-Control': "no-cache",
             }
-            response = requests.get('https://api.resy.com/2/user', headers=headers, proxies=PROXY_REQUEST)
+            # response = requests.get('https://api.resy.com/2/user', headers=headers, proxies=PROXY_REQUEST)
+            response = requests.get('https://api.resy.com/2/user', headers=headers)
+
             try:
                 payment_method_id = response.json()['payment_method_id']
             except:
@@ -112,7 +114,9 @@ def main():
             wargs.append('--disable-web-security')
             wargs.append('--start-maximized')
             
-            browser =  pr.chromium.launch(headless=True, args=wargs, proxy=PROXY_PL)
+            # browser =  pr.chromium.launch(headless=True, args=wargs, proxy=PROXY_PL)
+            browser =  pr.chromium.launch(headless=True, args=wargs)
+
             page = browser.new_page()
             stealth_sync(page)
             

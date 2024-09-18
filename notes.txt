@@ -1,0 +1,38 @@
+masalah css tidak terload:
+sudo usermod -a -G ubuntu www-data
+
+masukkan setting:
+insert into botui_setting(null, "Telegram Group/Channel ID", "TELEGRAM_CHAT_ID","-1002342812244");
+insert into botui_setting values(null, "Telegram Bot Token" ,"TELEGRAM_TOKEN" ,"7207865537:AAEyl4_fIWnFjZTnaH9uN6eJeYUF87MfRAk")
+
+masukkan default value:
+insert into botui_account(email) values("<Not Set>");
+insert into botui_multiproxy(name) values("<Not Set>");
+insert into botui_reservationtype(name) values("<Not Set>");
+
+buat logs folder karena .gitignore:
+mkdir logs
+
+buat cronjob.py sebagai service:
+sudo nano /lib/systemd/system/cronjob.service
+isi:
+----------
+[Unit]
+Description=Cron job for resy bot
+
+[Service]
+ExecStart=/home/ubuntu/dev/venv/bin/python /home/ubuntu/dev/resywebsite/botmodules/cronjob.py
+
+[Install]
+WantedBy=multi-user.target
+---------
+sudo systemctl daemon-reload
+sudo systemctl enable cronjob
+sudo systemctl start cronjob
+
+ssh:
+ubuntu@207.246.74.125
+pass: Resy1234!?
+
+mysql user: ubuntu
+pass: Resy1234!?
