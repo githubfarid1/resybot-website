@@ -95,6 +95,9 @@ def intercept_request(request, profilename):
                 payment_method_id = 999999
 
             session.query(Account).filter(Account.email==profilename).update({"token":token, "api_key":api_key, "payment_method_id": payment_method_id})
+            session.flush()
+            session.commit()
+
             logger.info("token Updated Successfully.. ")
             sys.exit()
         except:
