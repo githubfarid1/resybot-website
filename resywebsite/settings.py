@@ -175,7 +175,7 @@ AUTO_LOGOUT = {
     'MESSAGE': 'The session has expired. Please login again to continue.',
     'REDIRECT_TO_LOGIN_IMMEDIATELY': True,
 }
-ALLOWED_HOSTS = ['66.135.15.24', 'pydev.my.id', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [env("PUBLIC_IP"), env("DOMAIN"), 'localhost', '127.0.0.1']
 PYTHON_PATH = env('PYTHON_PATH')
 PIP_PATH = env('PIP_PATH')
 TELEGRAM_TOKEN = env('TELEGRAM_TOKEN')
