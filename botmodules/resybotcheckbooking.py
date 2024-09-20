@@ -208,6 +208,7 @@ def main():
             proxies.append({'proxy': f"http://{urlprox}", 'status': True})
     
     proxy_helper = session.query(Setting).filter(Setting.key=='PROXY_HELPER').one().value
+    
     if "http://" not in proxy_helper:
         proxy_helper = f"http://{proxy_helper}"
     resy_config_venue = {"api_key": api_key, "token": '', "payment_method_id": 999999, "email":'', "password":'', "http_proxy": proxy_helper, "https_proxy": proxy_helper, "retry_count": 3, "seconds_retry": float(retsecs)}
