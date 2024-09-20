@@ -669,20 +669,10 @@ def remove_botcheckrun(request, pk):
 @login_required(login_url="login")
 def view_checkbookrun_log(request, pk):
     botrun = get_object_or_404(BotCheckRun, pk=pk)
-    # strlog = ""
-    # if platform == "win32":
-    #     with open(f"logs/checkbookrun_web_{pk}.log", 'r') as file:
-    #         strlog = file.read()
-    # elif platform == "linux" or platform == "linux2":
-    #     with open(f"logs/checkbookrun_web_{pk}.log", 'r') as file:
-    #         strlog = file.read()
-
-    # Popen(["tail", "-1000", f"logs/checkbookrun_web_{pk}.log"], stdout=f"logs/checkbookrun_tail_{pk}.log")
-    # with open(f"logs/checkbookrun_tail_{pk}.log", 'r') as file:
-    #     strlog = file.read()
-
-    result = run(["tail", "-1000", f"logs/checkbookrun_web_{pk}.log"], stdout=PIPE)
-    strlog = result.stdout.decode('utf-8')
+    strlog = ""
+    if platform == "linux" or platform == "linux2":
+        result = run(["tail", "-1000", f"logs/checkbookrun_web_{pk}.log"], stdout=PIPE)
+        strlog = result.stdout.decode('utf-8')
     return render(request, 'botui/view_checkbookrun_log.html', {
         'botrun': botrun,
         'module': 'View Log',
