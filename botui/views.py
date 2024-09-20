@@ -7,7 +7,7 @@ from .forms import ReservationForm, ProxyForm, AccountForm, BotCommandForm, Mult
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_POST
 from sys import platform
-from subprocess import Popen, check_call, call
+from subprocess import Popen, check_call, call, run, PIPE
 import psutil
 import linecache
 import time
@@ -677,10 +677,12 @@ def view_checkbookrun_log(request, pk):
     #     with open(f"logs/checkbookrun_web_{pk}.log", 'r') as file:
     #         strlog = file.read()
 
-    Popen(["tail", "-1000", f"logs/checkbookrun_web_{pk}.log"], stdout=f"logs/checkbookrun_tail_{pk}.log")
-    with open(f"logs/checkbookrun_tail_{pk}.log", 'r') as file:
-        strlog = file.read()
+    # Popen(["tail", "-1000", f"logs/checkbookrun_web_{pk}.log"], stdout=f"logs/checkbookrun_tail_{pk}.log")
+    # with open(f"logs/checkbookrun_tail_{pk}.log", 'r') as file:
+    #     strlog = file.read()
 
+    result = run(["tail", "-1000", f"logs/checkbookrun_web_{pk}.log"], stdout=PIPE)
+    strlog = result.stdout.decode('utf-8')
     return render(request, 'botui/view_checkbookrun_log.html', {
         'botrun': botrun,
         'module': 'View Log',
