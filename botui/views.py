@@ -677,7 +677,7 @@ def view_checkbookrun_log(request, pk):
     #     with open(f"logs/checkbookrun_web_{pk}.log", 'r') as file:
     #         strlog = file.read()
 
-    Popen(["tail", f"logs/checkbookrun_web_{pk}.log", "-100"], stdout=f"logs/checkbookrun_tail_{pk}.log")
+    Popen(["tail", f"logs/checkbookrun_web_{pk}.log", "1000"], stdout=f"logs/checkbookrun_tail_{pk}.log")
     with open(f"logs/checkbookrun_tail_{pk}.log", 'r') as file:
         strlog = file.read()
 
