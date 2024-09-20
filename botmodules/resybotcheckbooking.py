@@ -102,7 +102,6 @@ def get_api_key():
             "username": "",
             "password": ""
         }
-    # breakpoint()
     with sync_playwright() as pr:
         wargs = []
         wargs.append('--v=1')
