@@ -18,13 +18,13 @@
 
 {% block content %}
 <div class="container-fluid">
-    <div class="d-flex flex-row-reverse bd-highlight px-3">
+    {% comment %} <div class="d-flex flex-row-reverse bd-highlight px-3">
       <div class="p-2 bd-highlight">
           <button hx-get="{% url 'botui_add_setting' %}" hx-target="#dialog" class="btn btn-sm btn-primary">
               New Setting
           </button>
       </div>
-    </div>
+    </div> {% endcomment %}
 
     <div class="row" hx-trigger="load, settingListChanged from:body" hx-get="{% url 'botui_setting_list' %}" hx-target="this">
         <span class="visually-hidden">Loading...</span>
