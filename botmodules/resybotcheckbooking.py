@@ -27,18 +27,7 @@ from dbclass import BotCheckRun, Setting
 from urllib.parse import quote, unquote, quote_plus, unquote_plus
 
 load_dotenv()
-PROXY_PL={
-  "server": "http://residential-proxy.scrapeops.io:8181",
-  "username": "scrapeops",
-  "password": "f2d43fe5-5bee-41ab-83f9-da70ae59c60a"
-}
-PROXY_REQUEST = {
-    "http":"http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181",
-    "https": "http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181"
-}
-# "rgs://resy/64869/1802535/2/2024-09-13/2024-09-13/21:30:00/2/Dining+room"
 
-# db = Database(os.getenv('BASE_FOLDER') + "db.sqlite3")
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
@@ -64,8 +53,6 @@ def intercept_request(request):
     return request
 
 def send_to_telegram(message):
-    # apiToken = os.getenv('TELEGRAM_TOKEN')
-    # chatID = os.getenv('TELEGRAM_CHAT_ID')
     apiToken = session.query(Setting).filter(Setting.key=='TELEGRAM_TOKEN').one().value
     chatID = session.query(Setting).filter(Setting.key=='TELEGRAM_CHAT_ID').one().value
     apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
@@ -93,6 +80,29 @@ def parse_to_html(slot, url, seats, venue_id, mentionto):
     return html
 
 def get_api_key():
+    proxy_helper = session.query(Setting).filter(Setting.key=='PROXY_HELPER').one().value
+    proxy_helper = proxy_helper.replace("http://","")
+    if len(proxy_helper.split("@")) == 2:
+        proxy_server = proxy_helper.split("@")[-1] 
+        urlprox = proxy_server.split("//")[-1]
+        urlprox = f"http://{urlprox}"
+        username = proxy_helper.split("@")[0].split(":")[0]
+        password = proxy_helper.split("@")[0].split(":")[1]
+        proxydict = {
+            "server": urlprox,
+            "username": username,
+            "password": password
+        }
+    else:
+        proxy_server = proxy_helper.split("@")[-1] 
+        urlprox = proxy_server.split("//")[-1]
+        urlprox = f"http://{urlprox}"
+        proxydict = {
+            "server": urlprox,
+            "username": "",
+            "password": ""
+        }
+    # breakpoint()
     with sync_playwright() as pr:
         wargs = []
         wargs.append('--v=1')
@@ -103,8 +113,7 @@ def get_api_key():
         wargs.append('--disable-web-security')
         wargs.append('--start-maximized')
         
-        # browser =  pr.chromium.launch(headless=True, args=wargs, proxy=PROXY_PL)
-        browser =  pr.chromium.launch(headless=True, args=wargs)
+        browser =  pr.chromium.launch(headless=True, args=wargs, proxy=proxydict)
 
         page = browser.new_page()
         stealth_sync(page)
@@ -178,7 +187,6 @@ def main():
     mentionto = data.mentionto
     minproxy = data.minproxy
     maxproxy = data.maxproxy
-
     if reservation_name == '<Not Set>':
         reservation_name = None
 
@@ -197,20 +205,21 @@ def main():
     proxies = []
     if  proxy_name != '<Not Set>':
         for proxy in proxy_value.split("\n"):
-            # urlprox = proxy.split("//")[-1]
-            # proxies.append({'proxy': f"sock5://{urlprox}", 'status': True})
             urlprox = proxy.split("//")[-1]
             proxies.append({'proxy': f"http://{urlprox}", 'status': True})
-            # proxies.append({'proxy': proxy, 'status': True})
+    
+    proxy_helper = session.query(Setting).filter(Setting.key=='PROXY_HELPER').one().value
+    resy_config_venue = {"api_key": api_key, "token": '', "payment_method_id": 999999, "email":'', "password":'', "http_proxy": proxy_helper, "https_proxy": proxy_helper, "retry_count": 3, "seconds_retry": float(retsecs)}
 
-        http_proxy = proxies[0]['proxy']
-        https_proxy = proxies[0]['proxy']
-        print(http_proxy)
-    resy_config = {"api_key": api_key, "token": '', "payment_method_id": 999999, "email":'', "password":'', "http_proxy": http_proxy, "https_proxy": https_proxy, "retry_count": 1, "seconds_retry": float(retsecs)}
-    venue_id = get_venue_id(resy_config=resy_config, urladdress=url)
+    resy_config_checker = {"api_key": api_key, "token": '', "payment_method_id": 999999, "email":'', "password":'', "http_proxy": proxies[0]['proxy'], "https_proxy": proxies[0]['proxy'], "retry_count": 1, "seconds_retry": float(retsecs)}
+
+    venue_id = get_venue_id(resy_config=resy_config_venue, urladdress=url)
+    if not venue_id:
+        print("Proxy error or venue_id not found")
+        sys.exit()
     # venue_id = '64869'
     if account_email != "<Not Set>":
-        resy_config_booking = {"api_key": account_api_key, "token": account_token, "payment_method_id": account_payment_method_id, "email":account_email, "password":account_password, "http_proxy": http_proxy, "https_proxy": https_proxy, "retry_count": 3, "seconds_retry": float(retsecs)}
+        resy_config_booking = {"api_key": account_api_key, "token": account_token, "payment_method_id": account_payment_method_id, "email":account_email, "password":account_password, "http_proxy": proxy_helper, "https_proxy": proxy_helper, "retry_count": 3, "seconds_retry": float(retsecs)}
     
     strdateyesterday = datetime.strftime(datetime.now()-timedelta(days=1), '%Y-%m-%d')
     flog = open(f"{os.getenv('BASE_FOLDER')}logs/checkbookrun_terminal_{id}.log", "w")
@@ -262,10 +271,11 @@ def main():
     proxyidx = 0
     excount = int(random_delay(minproxy, maxproxy))
     usecount = 0
-    
+    booklist = []
     while True:
         for single_date in daterange(start_date, end_date):
             searchdate = single_date.strftime("%Y-%m-%d")
+            bookable = False
             while True:
                 try:
                     if len(proxies) > 1:
@@ -275,15 +285,16 @@ def main():
                         if proxyidx > len(proxies)-1:
                             proxyidx = 0
                         if proxies[proxyidx]['status']:
-                            resy_config['http_proxy'] = proxies[proxyidx]['proxy']
-                            resy_config['https_proxy'] = proxies[proxyidx]['proxy']
+                            resy_config_checker['http_proxy'] = proxies[proxyidx]['proxy']
+                            resy_config_checker['https_proxy'] = proxies[proxyidx]['proxy']
                         else:
                             raise Get500Error
                     
                     myTable = PrettyTable(["KEY","VALUE"])
                     myTable.align ="l"
-                    slots = check_availability(resy_config=resy_config, datewanted=searchdate)
+                    slots = check_availability(resy_config=resy_config_checker, datewanted=searchdate)
                     if len(slots) != 0:
+                        bookable = True
                         print(searchdate)
                         flog.write(searchdate + "\n")
                         tmpstr = f"Found {len(slots)} Slots"
@@ -299,7 +310,6 @@ def main():
                         if sendmessage == True:
                             for html in htmllist:
                                 send_to_telegram(html)
-
                     usecount += 1
                     if usecount >= excount:
                         usecount = 0
@@ -314,11 +324,37 @@ def main():
                     print("Proxy Error, go to next proxy")
                     continue
                 except (ExhaustedRetriesError, NoSlotsError) as e:
+                    print(searchdate)
                     print(str(e))
-                    continue
+                    bookable = False
+                    break
                 except Exception as e:
                     print("Bot Error:", str(e))
                     sys.exit()
+            # sleeptime = random_delay(int(minidle), int(maxidle))
+            # print("Idle Time", int(sleeptime), "seconds")
+            # time.sleep(sleeptime)
+            # breakpoint()            
+            if account_email != "<Not Set>" and bookable and reservation_config["reservation_request"]["ideal_date"] not in booklist:
+                try:
+                    # breakpoint()
+                    tmpstr = "Trying to Book.."
+                    print(tmpstr)
+                    flog.write(tmpstr + "\n")
+                    resy_book_token = book_now(resy_config=resy_config_booking, reservation_config=reservation_config)
+                    # breakpoint()
+                    booklist.append(reservation_config["reservation_request"]["ideal_date"])
+                    print("Reservation Success..." + CLOSE_MESSAGE)
+                    # sys.exit()
+                except (ExhaustedRetriesError, NoSlotsError) as e:
+                    tmpstr = str(e)
+                    print(tmpstr)
+                    flog.write(tmpstr + "\n")
+                    continue
+                except (Get500Error, SSLError, ConnectionError) as e:
+                    print("Proxy Error, Booking Failed")
+                    continue
+
         if not nonstop:
             break
 

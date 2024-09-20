@@ -28,22 +28,52 @@ logger.setLevel("INFO")
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
-PROXY_REQUEST = {
-    "http":"http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181",
-    "https": "http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181"
-}
+CLOSE_MESSAGE = "tes"
 PROXY_PL={
   "server": "http://residential-proxy.scrapeops.io:8181",
   "username": "scrapeops",
   "password": "f2d43fe5-5bee-41ab-83f9-da70ae59c60a"
 }
-CLOSE_MESSAGE = "tes"
+PROXY_REQUEST = {
+    "http":"http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181",
+    "https": "http://scrapeops:f2d43fe5-5bee-41ab-83f9-da70ae59c60a@residential-proxy.scrapeops.io:8181"
+}
+
 load_dotenv()
 
 engine = create_engine('mysql+pymysql://{}:{}@localhost:{}/{}'.format(os.getenv('DB_USERNAME'), os.getenv('DB_PASS'), os.getenv('DB_PORT'), os.getenv('DB_NAME')) , echo=False)
 Session = sessionmaker(bind = engine)
 session = Session()
 
+# get proxy for playwright
+proxy_helper = session.query(Setting).filter(Setting.key=='PROXY_HELPER').one().value
+if len(proxy_helper.split("@")) == 2:
+    proxy_server = proxy_helper.split("@")[-1] 
+    urlprox = proxy_server.split("//")[-1]
+    urlprox = f"{urlprox}"
+    username = proxy_helper.split("@")[0].split(":")[0]
+    password = proxy_helper.split("@")[0].split(":")[1]
+    proxydict = {
+        "server": urlprox,
+        "username": username,
+        "password": password
+    }
+else:
+    proxy_server = proxy_helper.split("@")[-1] 
+    urlprox = proxy_server.split("//")[-1]
+    urlprox = f"http://{urlprox}"
+    proxydict = {
+        "server": urlprox,
+        "username": "",
+        "password": ""
+    }
+
+# get proxy for requests
+proxytmp = proxy_helper.split("//")[-1]
+proxydict2 = {"http":f"http://{proxytmp}",
+              "https":f"http://{proxytmp}",
+}
+# breakpoint()
 def login_to_resy(page, email, password):
     """Login to Resy with enhanced stability and error handling."""
     try:
@@ -83,7 +113,7 @@ def intercept_request(request, profilename):
                 "User-Agent": generate_user_agent(),
                 'Cache-Control': "no-cache",
             }
-            response = requests.get('https://api.resy.com/2/user', headers=headers, proxies=PROXY_REQUEST)
+            response = requests.get('https://api.resy.com/2/user', headers=headers, proxies=proxydict2)
             # response = requests.get('https://api.resy.com/2/user', headers=headers)
 
             try:
@@ -128,26 +158,37 @@ def main():
             wargs.append('--disable-web-security')
             wargs.append('--start-maximized')
             
-            browser =  pr.chromium.launch(headless=True, args=wargs, proxy=PROXY_PL)
+            # browser = pr.chromium.launch(headless=False, args=wargs, proxy=PROXY_PL)
+            browser =  pr.chromium.launch(headless=True, args=wargs, proxy=proxydict)
             # browser =  pr.chromium.launch(headless=True, args=wargs)
 
             page = browser.new_page()
             stealth_sync(page)
-            
-            page.goto("https://resy.com", wait_until="domcontentloaded", timeout=60000)
-            random_delay(2,5)
-            if page.query_selector('button.Button--login'):
-                login_to_resy(page, args.email, args.password)
+            trial = 0
+            while True:
+                trial += 1
+                if trial >=3:
+                    print("Update token Failed")
+                    logger.error("Update token Failed")
+                    sys.exit()
+
                 message = "Logged in successfully."
-                time.sleep(3)
+                page.goto("https://resy.com", wait_until="domcontentloaded", timeout=60000)
+                random_delay(2,5)
                 if page.query_selector('button.Button--login'):
-                    message = "Logged in Failed."
-                    raise Exception(message)    
-                
-                logging.info(message)
-                page.on("request", lambda request: intercept_request(request, profilename=args.email))
-                page.goto("https://resy.com/cities/orlando-fl", wait_until="domcontentloaded", timeout=60000)
-                browser.close()
+                    login_to_resy(page, args.email, args.password)
+                    
+                    time.sleep(3)
+                    # breakpoint()
+                    if page.query_selector('button.Button--login'):
+                        time.sleep(5)
+                        continue
+                    else:
+                        break    
+            logging.info(message)
+            page.on("request", lambda request: intercept_request(request, profilename=args.email))
+            page.goto("https://resy.com/cities/orlando-fl", wait_until="domcontentloaded", timeout=60000)
+            browser.close()
             error = False
             sys.exit()
             

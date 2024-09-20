@@ -52,8 +52,14 @@ class ResyManager:
 
     #frd
     def get_venue_id(self, address: str):
-        body = build_venue_body(address)
-        return self.api_access.find_venue_id(body)
+        for _ in range(self.retry_config.n_retries):
+            try:
+                body = build_venue_body(address)
+                return self.api_access.find_venue_id(body)
+            except:
+                print("get venue id error, try again..")
+                continue
+        return False
 
     def make_reservation(self, reservation_request: ReservationRequest) -> str:
         body = build_find_request_body(reservation_request)

@@ -8,8 +8,8 @@
             <thead>
               <tr>
                 <th scope="col">Name</th>
-                <th scope="col">PROXY 1</th>
-                <th scope="col">PROXY 2</th>
+                <th scope="col">PROXY</th>
+                {% comment %} <th scope="col">PROXY 2</th> {% endcomment %}
                 <th scope="col">Actions</th>
               </tr>
             </thead>            
@@ -21,7 +21,7 @@
                   <tr class="table-active">
                       <td>{{ d.name }}</td>
                       <td>{{ d.value|linebreaks }}</td>
-                      <td>{{ d.value2|linebreaks }}</td>
+                      {% comment %} <td>{{ d.value2|linebreaks }}</td> {% endcomment %}
                       <td width="15%">
                         <button type="button" class="btn btn-sm btn-success"  hx-get="{% url 'botui_edit_multiproxy' pk=d.pk %}" hx-target="#dialog">Edit</button>
                         <button style="border:none;"><form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'><a class="btn btn-sm btn-danger" hx-delete="{% url 'botui_remove_multiproxy' pk=d.pk %}" hx-confirm="Remove Proxy?">Delete</a></form></button>
