@@ -58,5 +58,6 @@ urlpatterns = [
     path(route='settings', view=views.show_settings, name=prefix + "show_settings"),
     path(route='setting_list', view=views.setting_list, name=prefix + "setting_list"),
     path(route='setting/<int:pk>/edit', view=views.edit_setting, name=prefix + "edit_setting"),
+    path(route='add_setting', view=views.add_setting, name=prefix + "add_setting"),
 
 ]

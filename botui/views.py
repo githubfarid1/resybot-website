@@ -746,7 +746,7 @@ def edit_setting(request, pk):
                 status=204,
                 headers={
                     'HX-Trigger': json.dumps({
-                        "proxyListChanged": None,
+                        "settingListChanged": None,
                         "showMessage": f"{setting.name} updated."
                     })
                 }
@@ -757,4 +757,25 @@ def edit_setting(request, pk):
         'form': form,
         'setting': setting,
         'module': 'Edit Data'
+    })
+
+@login_required(login_url="login")
+def add_setting(request):
+    if request.method == "POST":
+        form = SettingForm(request.POST)
+        if form.is_valid():
+            setting = form.save()
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({
+                        "settingListChanged": None,
+                        "showMessage": f"{setting.key} added."
+                    })
+                })
+    else:
+        form = SettingForm()
+    return render(request, 'botui/setting_form.html', {
+        'form': form,
+        'module': 'Add Data'
     })
