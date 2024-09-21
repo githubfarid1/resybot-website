@@ -136,7 +136,7 @@ class ResyApiAccess:
         parsed_resp = FindResponseBody(**resp.json())
         #frd
         if len(parsed_resp.results.venues) == 0:
-            raise IndexError("Date or vanue is not available")
+            raise IndexError("Date or vanue id is not available")
         else:
             return parsed_resp.results.venues[0].slots
 

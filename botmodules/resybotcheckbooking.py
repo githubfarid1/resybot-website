@@ -325,7 +325,7 @@ def main():
                     proxyidx += 1
                     print("Proxy Error, go to next proxy")
                     continue
-                except (ExhaustedRetriesError, NoSlotsError) as e:
+                except (ExhaustedRetriesError, NoSlotsError, IndexError) as e:
                     print(searchdate)
                     print(str(e))
                     bookable = False

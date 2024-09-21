@@ -98,7 +98,6 @@ class ResyManager:
                 if len(slots) == 0:
                     raise NoSlotsError("No Slots Found")
                 else:
-                    
                     selected_slots = self.selector.select2(slots, reservation_request)
                     if len(selected_slots) == 0:
                         raise NoSlotsError("No Slots Found")
