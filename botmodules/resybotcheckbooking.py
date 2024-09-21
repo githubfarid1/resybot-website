@@ -332,6 +332,7 @@ def main():
                     break
                 except Exception as e:
                     print("Bot Error:", str(e))
+                    time.sleep(2)
                     sys.exit()
             # sleeptime = random_delay(int(minidle), int(maxidle))
             # print("Idle Time", int(sleeptime), "seconds")
