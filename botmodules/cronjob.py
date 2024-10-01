@@ -39,21 +39,17 @@ def updatepidstatus():
     session.commit()
 
 def runcheckbooking():
-    # self.cur.execute("SELECT * FROM botui_botcheckrun where task=1 AND pid=0")
     for data in session.query(BotCheckRun).filter(BotCheckRun.task==1, BotCheckRun.pid==0).all():
         print("run")
         id = data.id
         fname = open(f"{os.getenv('BASE_FOLDER')}logs/checkbookrun_web_{id}.log", "w")
         commandlist = [PYLOC, f"{os.getenv('BASE_FOLDER')}botmodules/resybotcheckbooking.py", "-id", '{}'.format(id), "-apikey", '{}'.format(RESY_API_KEY) ]
         process = Popen(commandlist, stdout=fname)
-        # print(" ".join(commandlist))
-        # db.updateBotrunPid(id=data[0], pid=process.pid)
         session.query(BotCheckRun).filter(BotCheckRun.id==id).update({"pid":process.pid})
     session.flush()
     session.commit()
 
 def stopcheckbooking():
-    # self.cur.execute("SELECT * FROM botui_botcheckrun where task=2 AND pid<>-1")
     for data in session.query(BotCheckRun).filter(BotCheckRun.task == 2, BotCheckRun.pid != -1).all():
         print("stop")
         pid = data.pid
@@ -63,14 +59,12 @@ def stopcheckbooking():
             proc.terminate()
         except:
             pass
-        # db.updateBotrunPid(id=id, pid=-1)
         session.query(BotCheckRun).filter(BotCheckRun.id==id).update({"pid":-1})
     session.flush()
     session.commit()
 
 
 def delcheckbooking():
-    # self.cur.execute("SELECT * FROM botui_botcheckrun where task=3")
     for data in session.query(BotCheckRun).filter(BotCheckRun.task == 3).all():
         print("del")
         pid = data.pid

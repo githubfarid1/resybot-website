@@ -25,7 +25,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dbclass import BotCheckRun, Setting
 from urllib.parse import quote, unquote, quote_plus, unquote_plus
-
+from pymysql.err import OperationalError
 load_dotenv()
 
 current = os.path.dirname(os.path.realpath(__file__))
@@ -320,16 +320,23 @@ def main():
                         proxyidx += 1
                         break
                     break
-                except (Get500Error, SSLError, ConnectionError) as e:
+                except (Get500Error, SSLError, ConnectionError, HTTPError) as e:
                     # proxies[proxyidx]['status'] = False
                     proxyidx += 1
                     print("Proxy Error, go to next proxy")
+                    print(str(e))
                     continue
                 except (ExhaustedRetriesError, NoSlotsError, IndexError) as e:
                     print(searchdate)
                     print(str(e))
                     bookable = False
                     break
+                except OperationalError as e:
+                    proxyidx += 1
+                    print("Database connection error")
+                    print(str(e))
+                    continue
+
                 except Exception as e:
                     print("Bot Error:", str(e))
                     time.sleep(2)
